@@ -1,0 +1,23 @@
+syntax="proto3";
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+import "google/api/http.proto";
+
+package access_v1;
+
+option go_package = "auth/pkg/grpc/access_v1;access_v1";
+
+
+service AccessService {
+  rpc Check(CheckRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/v1/auth/check"
+      body: "*"
+    };
+  }
+}
+
+message CheckRequest {
+  string endpoint_address = 1;
+}

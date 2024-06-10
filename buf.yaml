@@ -1,0 +1,16 @@
+# version: v2
+# modules:
+#     - path: api/proto
+# lint:
+#   use:
+#     - DEFAULT
+#   ignore:
+#     - api/proto/google/api/annotations.proto
+#     - api/proto/google/api/http.proto
+# breaking:
+#   use:
+#     - FILE
+# deps:
+#  - buf.build/googleapis/googleapis
+#  - buf.build/grpc-ecosystem/grpc-gateway
+#  - buf.build/envoyproxy/protoc-gen-validate
