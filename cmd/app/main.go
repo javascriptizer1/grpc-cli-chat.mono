@@ -7,12 +7,17 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/config"
-	gs "github.com/javascriptizer1/grpc-cli-chat.backend/internal/delivery/grpc_server"
+	accessgrpc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/delivery/grpc/access"
+	authgrpc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/delivery/grpc/auth"
+	usergrpc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/delivery/grpc/user"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/interceptor"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/repository"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/service"
+	userrepo "github.com/javascriptizer1/grpc-cli-chat.backend/internal/repository/user"
+	authsvc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/service/auth"
+	usersvc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/service/user"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/client/postgres"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/authv1"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/access_v1"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/auth_v1"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/user_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -46,11 +51,22 @@ func main() {
 
 	reflection.Register(s)
 
-	userRepo := repository.New(db)
-	userService := service.New(userRepo)
-	grpcServer := gs.New(userService)
+	userRepo := userrepo.New(db)
+	userService := usersvc.New(userRepo)
+	authService := authsvc.New(userRepo, authsvc.AuthConfig{
+		AccessTokenSecretKey:  cfg.JWT.AccessSecretKey,
+		AccessTokenDuration:   cfg.JWT.AccessDuration,
+		RefreshTokenSecretKey: cfg.JWT.RefreshSecretKey,
+		RefreshTokenDuration:  cfg.JWT.RefreshDuration,
+	})
 
-	authv1.RegisterUserServiceServer(s, grpcServer)
+	authGRPCServer := authgrpc.New(authService)
+	accessGRPCServer := accessgrpc.New(authService)
+	userGRPCServer := usergrpc.New(userService)
+
+	auth_v1.RegisterAuthServiceServer(s, authGRPCServer)
+	access_v1.RegisterAccessServiceServer(s, accessGRPCServer)
+	user_v1.RegisterUserServiceServer(s, userGRPCServer)
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

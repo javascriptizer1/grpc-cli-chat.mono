@@ -4,7 +4,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 import "google/api/annotations.proto";
 import "google/api/http.proto";
-import "buf/validate/validate.proto";
+// import "buf/validate/validate.proto";
 
 package user_v1;
 
@@ -25,15 +25,14 @@ enum Role {
 }
 
 message GetUserRequest {
-  uint64 id = 1;
+  string id = 1;
 }
 
 message GetUserResponse {
-  uint64 id = 1;
+  string id = 1;
   string name = 2;
   string email = 3;
   Role role = 4;
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
-
 }

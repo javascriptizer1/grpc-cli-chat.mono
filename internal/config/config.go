@@ -12,11 +12,19 @@ type Config struct {
 	Env  string `env:"ENV" env-default:"local"`
 	GRPC GRPCConfig
 	DB   DBConfig
+	JWT  JWTConfig
 }
 
 type GRPCConfig struct {
 	Port    int           `env:"GRPC_SERVER_PORT" env-default:"50051"`
 	Timeout time.Duration `env:"GRPC_SERVER_TIMEOUT"`
+}
+
+type JWTConfig struct {
+	AccessSecretKey  string        `env:"JWT_ACCESS_SECRET" env-required:"true"`
+	AccessDuration   time.Duration `env:"JWT_ACCESS_DURATION" env-required:"true"`
+	RefreshSecretKey string        `env:"JWT_REFRESH_SECRET" env-required:"true"`
+	RefreshDuration  time.Duration `env:"JWT_REFRESH_DURATION" env-required:"true"`
 }
 
 type DBConfig struct {
