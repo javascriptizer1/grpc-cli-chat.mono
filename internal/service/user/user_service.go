@@ -8,5 +8,11 @@ import (
 )
 
 func (s *UserService) OneById(ctx context.Context, id uuid.UUID) (*user.User, error) {
-	return s.userRepo.OneById(ctx, id)
+	u, err := s.userRepo.OneById(ctx, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return u, err
 }

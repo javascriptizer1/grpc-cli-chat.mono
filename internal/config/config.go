@@ -2,6 +2,8 @@ package config
 
 import (
 	"log"
+	"net"
+	"strconv"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -11,13 +13,29 @@ import (
 type Config struct {
 	Env  string `env:"ENV" env-default:"local"`
 	GRPC GRPCConfig
+	HTTP HTTPConfig
 	DB   DBConfig
 	JWT  JWTConfig
 }
 
 type GRPCConfig struct {
+	Host    string        `env:"GRPC_SERVER_HOST" env-default:"localhost"`
 	Port    int           `env:"GRPC_SERVER_PORT" env-default:"50051"`
 	Timeout time.Duration `env:"GRPC_SERVER_TIMEOUT"`
+}
+
+func (c *GRPCConfig) HostPort() string {
+	return net.JoinHostPort(c.Host, strconv.Itoa(c.Port))
+}
+
+type HTTPConfig struct {
+	Host    string        `env:"HTTP_SERVER_HOST" env-default:"localhost"`
+	Port    int           `env:"HTTP_SERVER_PORT" env-default:"8080"`
+	Timeout time.Duration `env:"HTTP_SERVER_TIMEOUT"`
+}
+
+func (c *HTTPConfig) HostPort() string {
+	return net.JoinHostPort(c.Host, strconv.Itoa(c.Port))
 }
 
 type JWTConfig struct {

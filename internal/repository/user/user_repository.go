@@ -2,6 +2,8 @@ package userrepo
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
@@ -27,7 +29,7 @@ func New(db *sqlx.DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(_ context.Context, input *user.User) error {
-	sql, args, err := r.builder.Insert(users).Columns(
+	query, args, err := r.builder.Insert(users).Columns(
 		"id",
 		"name",
 		"email",
@@ -49,7 +51,7 @@ func (r *UserRepository) Create(_ context.Context, input *user.User) error {
 		return err
 	}
 
-	row := r.db.QueryRow(sql, args...)
+	row := r.db.QueryRow(query, args...)
 
 	return row.Err()
 }
@@ -57,7 +59,7 @@ func (r *UserRepository) Create(_ context.Context, input *user.User) error {
 func (r *UserRepository) OneById(_ context.Context, id uuid.UUID) (u *user.User, err error) {
 	var rawUser User
 
-	sql, args, err := r.builder.
+	query, args, err := r.builder.
 		Select("id", "name", "email", "password_hash", "role", "created_at", "updated_at").
 		From(users).
 		Where(sq.Eq{"id": id.String()}).
@@ -67,9 +69,13 @@ func (r *UserRepository) OneById(_ context.Context, id uuid.UUID) (u *user.User,
 		return u, err
 	}
 
-	err = r.db.Get(&rawUser, sql, args...)
+	err = r.db.Get(&rawUser, query, args...)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return u, errors.New("user not found")
+		}
+
 		return u, err
 	}
 
@@ -79,7 +85,7 @@ func (r *UserRepository) OneById(_ context.Context, id uuid.UUID) (u *user.User,
 func (r *UserRepository) OneByEmail(_ context.Context, email string) (u *user.User, err error) {
 	var rawUser User
 
-	sql, args, err := r.builder.
+	query, args, err := r.builder.
 		Select("id", "name", "email", "password_hash", "role", "created_at", "updated_at").
 		From(users).
 		Where(sq.Eq{"email": email}).
@@ -89,9 +95,13 @@ func (r *UserRepository) OneByEmail(_ context.Context, email string) (u *user.Us
 		return u, err
 	}
 
-	err = r.db.Get(&rawUser, sql, args...)
+	err = r.db.Get(&rawUser, query, args...)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return u, errors.New("user not found")
+		}
+
 		return u, err
 	}
 
