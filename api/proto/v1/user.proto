@@ -1,10 +1,10 @@
 syntax="proto3";
 
+import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 import "google/api/annotations.proto";
 import "google/api/http.proto";
-// import "buf/validate/validate.proto";
 
 package user_v1;
 
@@ -12,9 +12,9 @@ option go_package = "auth/pkg/grpc/user_v1;user_v1";
 
 
 service UserService {
-  rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+  rpc GetUserInfo(google.protobuf.Empty) returns (GetUserResponse) {
     option (google.api.http) = {
-      get: "/v1/users/{id}"
+      get: "/v1/users/my-info"
     };
   }
 }
@@ -22,10 +22,6 @@ service UserService {
 enum Role {
   admin = 0;
   user = 1;
-}
-
-message GetUserRequest {
-  string id = 1;
 }
 
 message GetUserResponse {

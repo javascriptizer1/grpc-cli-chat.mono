@@ -8,10 +8,9 @@ generate-api:
 	make generate-api-auth
 	make generate-api-user
 
-
 generate-api-auth:
 	mkdir -p pkg/grpc/auth_v1
-	protoc --proto_path api/proto/v1 --proto_path vendor.protogen \
+	protoc --proto_path api/proto/v1 --proto_path vendor/protogen \
 	--go_out=pkg/grpc/auth_v1 --go_opt=paths=source_relative \
 	--plugin=protoc-gen-go=/usr/local/bin/protoc-gen-go \
 	--go-grpc_out=pkg/grpc/auth_v1 --go-grpc_opt=paths=source_relative \
@@ -26,7 +25,7 @@ generate-api-auth:
 
 generate-api-access:
 	mkdir -p pkg/grpc/access_v1
-	protoc --proto_path api/proto/v1 --proto_path vendor.protogen \
+	protoc --proto_path api/proto/v1 --proto_path vendor/protogen \
 	--go_out=pkg/grpc/access_v1 --go_opt=paths=source_relative \
 	--plugin=protoc-gen-go=/usr/local/bin/protoc-gen-go \
 	--go-grpc_out=pkg/grpc/access_v1 --go-grpc_opt=paths=source_relative \
@@ -37,10 +36,9 @@ generate-api-access:
 	--plugin=protoc-gen-openapiv2=/usr/local/bin/protoc-gen-openapiv2 \
 	api/proto/v1/access.proto
 
-
 generate-api-user:
 	mkdir -p pkg/grpc/user_v1
-	protoc --proto_path api/proto/v1 --proto_path vendor.protogen \
+	protoc --proto_path api/proto/v1 --proto_path vendor/protogen \
 	--go_out=pkg/grpc/user_v1 --go_opt=paths=source_relative \
 	--plugin=protoc-gen-go=/usr/local/bin/protoc-gen-go \
 	--go-grpc_out=pkg/grpc/user_v1 --go-grpc_opt=paths=source_relative \
@@ -52,6 +50,7 @@ generate-api-user:
 	--openapiv2_out=allow_merge=true,merge_file_name=api_user_v1:pkg/swagger \
 	--plugin=protoc-gen-openapiv2=/usr/local/bin/protoc-gen-openapiv2 \
 	api/proto/v1/user.proto
+
 
 vendor-proto:
 		@if [ ! -d vendor/protogen/buf/validate ]; then \

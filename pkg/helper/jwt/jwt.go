@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -13,8 +14,8 @@ func GenerateToken(user user.User, secret string, duration time.Duration) (strin
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": user.Id,
 		"iss": "@j11er1",
-		"aud": user.Role,
-		"exp": time.Now().Add(time.Hour).Unix(),
+		"aud": strconv.Itoa(int(user.Role)),
+		"exp": time.Now().Add(time.Second * time.Duration(duration.Seconds())).Unix(),
 		"iat": time.Now().Unix(),
 	})
 

@@ -104,6 +104,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	a.grpcServer = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptor.LogInterceptor,
+			interceptor.AuthInterceptor,
 			interceptor.ValidateInterceptor,
 		),
 	)

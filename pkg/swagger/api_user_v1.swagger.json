@@ -16,9 +16,9 @@
     "application/json"
   ],
   "paths": {
-    "/v1/users/{id}": {
+    "/v1/users/my-info": {
       "get": {
-        "operationId": "UserService_GetUser",
+        "operationId": "UserService_GetUserInfo",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -33,14 +33,6 @@
             }
           }
         },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
         "tags": [
           "UserService"
         ]
