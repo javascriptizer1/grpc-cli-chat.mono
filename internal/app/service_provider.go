@@ -2,18 +2,19 @@ package app
 
 import (
 	"context"
-	"log"
 
 	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/config"
 	accessgrpc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/delivery/grpc/access"
 	authgrpc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/delivery/grpc/auth"
 	usergrpc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/delivery/grpc/user"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/logger"
 	userrepo "github.com/javascriptizer1/grpc-cli-chat.backend/internal/repository/user"
 	authsvc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/service/auth"
 	usersvc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/service/user"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/client/postgres"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/closer"
 	"github.com/jmoiron/sqlx"
+	"go.uber.org/zap"
 )
 
 type serviceProvider struct {
@@ -56,7 +57,7 @@ func (s *serviceProvider) GetPostgresClient(ctx context.Context) *sqlx.DB {
 		})
 
 		if err != nil {
-			log.Fatalf("failed to start up db: %v", err)
+			logger.Fatal("failed to start up db: ", zap.String("err", err.Error()))
 		}
 
 		closer.Add(db.Close)

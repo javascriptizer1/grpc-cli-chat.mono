@@ -1,12 +1,12 @@
 package config
 
 import (
-	"log"
 	"net"
 	"strconv"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/logger"
 	"github.com/joho/godotenv"
 )
 
@@ -57,7 +57,7 @@ func MustLoad() *Config {
 	err := godotenv.Load()
 
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		logger.Fatal("Error loading .env file")
 	}
 
 	var cfg Config

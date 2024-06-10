@@ -2,18 +2,19 @@ package app
 
 import (
 	"context"
-	"log"
 	"net"
 	"net/http"
 	"sync"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/interceptor"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/logger"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/access_v1"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/auth_v1"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/user_v1"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/closer"
 	"github.com/rs/cors"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -51,7 +52,7 @@ func (a *App) Run() error {
 
 		err := a.runGRPCServer()
 		if err != nil {
-			log.Fatalf("failed to run GRPC server: %v", err)
+			logger.Fatal("failed to run GRPC server: ", zap.Any("error", err))
 		}
 	}()
 
@@ -60,7 +61,7 @@ func (a *App) Run() error {
 
 		err := a.runHTTPServer()
 		if err != nil {
-			log.Fatalf("failed to run HTTP server: %v", err)
+			logger.Fatal("failed to run HTTP server: ", zap.Any("error", err))
 		}
 	}()
 
@@ -72,6 +73,7 @@ func (a *App) Run() error {
 func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
 		a.initServiceProvider,
+		a.initLogger,
 		a.initGRPCServer,
 		a.initHTTPServer,
 	}
@@ -92,9 +94,16 @@ func (a *App) initServiceProvider(_ context.Context) error {
 	return nil
 }
 
+func (a *App) initLogger(_ context.Context) error {
+	logger.Init(a.serviceProvider.GetConfig().Env)
+
+	return nil
+}
+
 func (a *App) initGRPCServer(ctx context.Context) error {
 	a.grpcServer = grpc.NewServer(
-		grpc.UnaryInterceptor(
+		grpc.ChainUnaryInterceptor(
+			interceptor.LogInterceptor,
 			interceptor.ValidateInterceptor,
 		),
 	)
@@ -137,7 +146,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 }
 
 func (a *App) runGRPCServer() error {
-	log.Printf("GRPC server is running on %s", a.serviceProvider.GetConfig().GRPC.HostPort())
+	logger.Info("GRPC server is running on " + a.serviceProvider.GetConfig().GRPC.HostPort())
 
 	l, err := net.Listen("tcp", a.serviceProvider.GetConfig().GRPC.HostPort())
 
@@ -155,7 +164,7 @@ func (a *App) runGRPCServer() error {
 }
 
 func (a *App) runHTTPServer() error {
-	log.Printf("HTTP server is running on %s", a.serviceProvider.GetConfig().HTTP.HostPort())
+	logger.Info("HTTP server is running on " + a.serviceProvider.GetConfig().HTTP.HostPort())
 
 	err := a.httpServer.ListenAndServe()
 
