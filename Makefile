@@ -12,7 +12,7 @@ generate-api:
 
 generate-api-auth:
 	mkdir -p pkg/grpc/auth_v1
-	protoc --proto_path api/proto/v1 --proto_path vendor/protogen \
+	protoc --proto_path api/proto/v1 --proto_path vendor.protogen \
 	--go_out=pkg/grpc/auth_v1 --go_opt=paths=source_relative \
 	--plugin=protoc-gen-go=/usr/local/bin/protoc-gen-go \
 	--go-grpc_out=pkg/grpc/auth_v1 --go-grpc_opt=paths=source_relative \
@@ -27,7 +27,7 @@ generate-api-auth:
 
 generate-api-access:
 	mkdir -p pkg/grpc/access_v1
-	protoc --proto_path api/proto/v1 --proto_path vendor/protogen \
+	protoc --proto_path api/proto/v1 --proto_path vendor.protogen \
 	--go_out=pkg/grpc/access_v1 --go_opt=paths=source_relative \
 	--plugin=protoc-gen-go=/usr/local/bin/protoc-gen-go \
 	--go-grpc_out=pkg/grpc/access_v1 --go-grpc_opt=paths=source_relative \
@@ -40,7 +40,7 @@ generate-api-access:
 
 generate-api-user:
 	mkdir -p pkg/grpc/user_v1
-	protoc --proto_path api/proto/v1 --proto_path vendor/protogen \
+	protoc --proto_path api/proto/v1 --proto_path vendor.protogen \
 	--go_out=pkg/grpc/user_v1 --go_opt=paths=source_relative \
 	--plugin=protoc-gen-go=/usr/local/bin/protoc-gen-go \
 	--go-grpc_out=pkg/grpc/user_v1 --go-grpc_opt=paths=source_relative \
@@ -55,23 +55,23 @@ generate-api-user:
 
 
 vendor-proto:
-		@if [ ! -d vendor/protogen/buf/validate ]; then \
-			mkdir -p vendor/protogen/buf/validate &&\
-			git clone https://github.com/envoyproxy/protoc-gen-validate vendor/protogen/protoc-gen-validate &&\
-			mv vendor/protogen/protoc-gen-validate/validate/*.proto vendor/protogen/buf/validate &&\
-			rm -rf vendor/protogen/protoc-gen-validate ;\
+		@if [ ! -d vendor.protogen/buf/validate ]; then \
+			mkdir -p vendor.protogen/buf/validate &&\
+			git clone https://github.com/envoyproxy/protoc-gen-validate vendor.protogen/protoc-gen-validate &&\
+			mv vendor.protogen/protoc-gen-validate/validate/*.proto vendor.protogen/buf/validate &&\
+			rm -rf vendor.protogen/protoc-gen-validate ;\
 		fi
-		@if [ ! -d vendor/protogen/google ]; then \
-			git clone https://github.com/googleapis/googleapis vendor/protogen/googleapis &&\
-			mkdir -p  vendor/protogen/google/ &&\
-			mv vendor/protogen/googleapis/google/api vendor/protogen/google &&\
-			rm -rf vendor/protogen/googleapis ;\
+		@if [ ! -d vendor.protogen/google ]; then \
+			git clone https://github.com/googleapis/googleapis vendor.protogen/googleapis &&\
+			mkdir -p  vendor.protogen/google/ &&\
+			mv vendor.protogen/googleapis/google/api vendor.protogen/google &&\
+			rm -rf vendor.protogen/googleapis ;\
 		fi
-		@if [ ! -d vendor/protogen/protoc-gen-openapiv2 ]; then \
-			mkdir -p vendor/protogen/protoc-gen-openapiv2/options &&\
-			git clone https://github.com/grpc-ecosystem/grpc-gateway vendor/protogen/openapiv2 &&\
-			mv vendor/protogen/openapiv2/protoc-gen-openapiv2/options/*.proto vendor/protogen/protoc-gen-openapiv2/options &&\
-			rm -rf vendor/protogen/openapiv2 ;\
+		@if [ ! -d vendor.protogen/protoc-gen-openapiv2 ]; then \
+			mkdir -p vendor.protogen/protoc-gen-openapiv2/options &&\
+			git clone https://github.com/grpc-ecosystem/grpc-gateway vendor.protogen/openapiv2 &&\
+			mv vendor.protogen/openapiv2/protoc-gen-openapiv2/options/*.proto vendor.protogen/protoc-gen-openapiv2/options &&\
+			rm -rf vendor.protogen/openapiv2 ;\
 		fi
 
 migrations-up:

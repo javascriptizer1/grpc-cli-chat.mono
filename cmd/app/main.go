@@ -10,6 +10,7 @@ import (
 
 func main() {
 	ctx := context.Background()
+
 	a, err := app.New(ctx)
 
 	if err != nil {
