@@ -1,0 +1,34 @@
+syntax="proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/api/annotations.proto";
+import "google/api/http.proto";
+
+package userv1;
+
+option go_package = "../../../../auth/pkg/grpc/user_v1;userv1";
+
+
+service UserService {
+  rpc GetUserInfo(google.protobuf.Empty) returns (GetUserResponse) {
+    option (google.api.http) = {
+      get: "/v1/users/my-info"
+    };
+  }
+}
+
+enum Role {
+  admin = 0;
+  user = 1;
+}
+
+message GetUserResponse {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  Role role = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}

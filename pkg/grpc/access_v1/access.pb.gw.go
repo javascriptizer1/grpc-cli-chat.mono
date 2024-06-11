@@ -2,11 +2,11 @@
 // source: access.proto
 
 /*
-Package access_v1 is a reverse proxy.
+Package accessv1 is a reverse proxy.
 
 It translates gRPC into RESTful JSON APIs.
 */
-package access_v1
+package accessv1
 
 import (
 	"context"
@@ -71,7 +71,7 @@ func RegisterAccessServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/access_v1.AccessService/Check", runtime.WithHTTPPathPattern("/v1/auth/check"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/accessv1.AccessService/Check", runtime.WithHTTPPathPattern("/v1/auth/check"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -135,7 +135,7 @@ func RegisterAccessServiceHandlerClient(ctx context.Context, mux *runtime.ServeM
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/access_v1.AccessService/Check", runtime.WithHTTPPathPattern("/v1/auth/check"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/accessv1.AccessService/Check", runtime.WithHTTPPathPattern("/v1/auth/check"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

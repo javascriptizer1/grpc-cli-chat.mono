@@ -1,0 +1,83 @@
+syntax="proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/api/annotations.proto";
+import "google/api/http.proto";
+import "buf/validate/validate.proto";
+
+package authv1;
+
+option go_package = "../../../../auth/pkg/grpc/auth_v1;authv1";
+
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse) {
+   option (google.api.http) = {
+      post: "/v1/auth/register"
+      body: "*"
+    };
+  }
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/login"
+      body: "*"
+    };
+  }
+  rpc GetRefreshToken(GetRefreshTokenRequest) returns (GetRefreshTokenResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/refresh"
+      body: "*"
+    };
+  }
+  rpc GetAccessToken(GetAccessTokenRequest) returns (GetAccessTokenResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/access"
+      body: "*"
+    };
+  }
+}
+
+
+enum Role {
+  admin = 0;
+  user = 1;
+}
+
+message RegisterRequest {
+  string name = 1 [(validate.rules).string = {min_len: 2, max_len: 21}];
+  string email = 2 [(validate.rules).string.email = true];
+  string password = 3;
+  string password_confirm = 4;
+  Role role = 5 [(validate.rules).enum.defined_only = true];
+}
+
+message RegisterResponse {
+  string id = 1;
+}
+
+message LoginRequest {
+  string login = 1 [(validate.rules).string.email = true];
+  string password = 2;
+}
+
+message LoginResponse {
+  string refresh_token = 1;
+}
+
+message GetRefreshTokenRequest {
+  string old_refresh_token = 1;
+}
+
+message GetRefreshTokenResponse {
+  string refresh_token = 1;
+}
+
+message GetAccessTokenRequest {
+  string refresh_token = 1;
+}
+
+message GetAccessTokenResponse {
+  string access_token = 1;
+}
