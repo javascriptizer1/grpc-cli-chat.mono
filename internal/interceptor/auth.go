@@ -2,9 +2,9 @@ package interceptor
 
 import (
 	"context"
-	"os"
 	"strings"
 
+	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/ctxkey"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/jwt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -12,7 +12,17 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func AuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+var ContextKeyUserClaims = ctxkey.ContextKey("userClaims")
+
+type AuthInterceptor struct {
+	accessTokenSecret string
+}
+
+func NewAuthInterceptor(accessTokenSecret string) *AuthInterceptor {
+	return &AuthInterceptor{accessTokenSecret: accessTokenSecret}
+}
+
+func (i *AuthInterceptor) Unary(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 
 	if !methodRequiresAuthentication(info.FullMethod) {
 		return handler(ctx, req)
@@ -45,13 +55,13 @@ func AuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServe
 
 	t := fields[1]
 
-	payload, err := jwt.VerifyToken(t, os.Getenv("JWT_ACCESS_SECRET"))
+	payload, err := jwt.VerifyToken(t, i.accessTokenSecret)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid token %v", err)
 	}
 
-	ctx = context.WithValue(ctx, "payload", payload)
+	ctx = context.WithValue(ctx, ContextKeyUserClaims, payload)
 
 	return handler(ctx, req)
 }

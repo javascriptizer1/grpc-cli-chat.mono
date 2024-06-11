@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/interceptor"
@@ -90,7 +91,7 @@ func (a *App) initDeps(ctx context.Context) error {
 }
 
 func (a *App) initServiceProvider(_ context.Context) error {
-	a.serviceProvider = new()
+	a.serviceProvider = newServiceProvider()
 	return nil
 }
 
@@ -104,7 +105,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	a.grpcServer = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptor.LogInterceptor,
-			interceptor.AuthInterceptor,
+			interceptor.NewAuthInterceptor(a.serviceProvider.GetConfig().JWT.AccessSecretKey).Unary,
 			interceptor.ValidateInterceptor,
 		),
 	)
@@ -139,8 +140,10 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	})
 
 	a.httpServer = &http.Server{
-		Addr:    a.serviceProvider.GetConfig().HTTP.HostPort(),
-		Handler: corsMiddleware.Handler(mux),
+		Addr:              a.serviceProvider.GetConfig().HTTP.HostPort(),
+		Handler:           corsMiddleware.Handler(mux),
+		ReadHeaderTimeout: 3 * time.Second,
+		WriteTimeout:      a.serviceProvider.GetConfig().HTTP.Timeout,
 	}
 
 	return nil

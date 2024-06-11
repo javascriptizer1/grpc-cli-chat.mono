@@ -4,13 +4,10 @@ import (
 	"context"
 
 	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/config"
-	accessgrpc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/delivery/grpc/access"
-	authgrpc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/delivery/grpc/auth"
-	usergrpc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/delivery/grpc/user"
+	delivery "github.com/javascriptizer1/grpc-cli-chat.backend/internal/delivery/grpc"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/logger"
-	userrepo "github.com/javascriptizer1/grpc-cli-chat.backend/internal/repository/user"
-	authsvc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/service/auth"
-	usersvc "github.com/javascriptizer1/grpc-cli-chat.backend/internal/service/user"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/repository"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/service"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/client/postgres"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/closer"
 	"github.com/jmoiron/sqlx"
@@ -21,17 +18,17 @@ type serviceProvider struct {
 	config *config.Config
 
 	dbClient       *sqlx.DB
-	userRepository *userrepo.UserRepository
+	userRepository *repository.UserRepository
 
-	authService *authsvc.AuthService
-	userService *usersvc.UserService
+	authService *service.AuthService
+	userService *service.UserService
 
-	authImpl   *authgrpc.GrpcAuthImplementation
-	accessImpl *accessgrpc.GrpcAccessImplementation
-	userImpl   *usergrpc.GrpcUserImplementation
+	authImpl   *delivery.AuthImplementation
+	accessImpl *delivery.AccessImplementation
+	userImpl   *delivery.UserImplementation
 }
 
-func new() *serviceProvider {
+func newServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }
 
@@ -45,7 +42,7 @@ func (s *serviceProvider) GetConfig() *config.Config {
 	return s.config
 }
 
-func (s *serviceProvider) GetPostgresClient(ctx context.Context) *sqlx.DB {
+func (s *serviceProvider) GetPostgresClient(_ context.Context) *sqlx.DB {
 	if s.dbClient == nil {
 
 		db, err := postgres.New(postgres.Config{
@@ -68,21 +65,21 @@ func (s *serviceProvider) GetPostgresClient(ctx context.Context) *sqlx.DB {
 	return s.dbClient
 }
 
-func (s *serviceProvider) GetUserRepository(ctx context.Context) *userrepo.UserRepository {
+func (s *serviceProvider) GetUserRepository(ctx context.Context) *repository.UserRepository {
 
 	if s.userRepository == nil {
-		s.userRepository = userrepo.New(s.GetPostgresClient(ctx))
+		s.userRepository = repository.NewUserRepository(s.GetPostgresClient(ctx))
 	}
 
 	return s.userRepository
 }
 
-func (s *serviceProvider) GetAuthService(ctx context.Context) *authsvc.AuthService {
+func (s *serviceProvider) GetAuthService(ctx context.Context) *service.AuthService {
 
 	if s.authService == nil {
-		s.authService = authsvc.New(
+		s.authService = service.NewAuthService(
 			s.GetUserRepository(ctx),
-			authsvc.AuthConfig{
+			service.AuthConfig{
 				AccessTokenSecretKey:  s.GetConfig().JWT.AccessSecretKey,
 				AccessTokenDuration:   s.GetConfig().JWT.AccessDuration,
 				RefreshTokenSecretKey: s.GetConfig().JWT.RefreshSecretKey,
@@ -93,10 +90,10 @@ func (s *serviceProvider) GetAuthService(ctx context.Context) *authsvc.AuthServi
 	return s.authService
 }
 
-func (s *serviceProvider) GetUserService(ctx context.Context) *usersvc.UserService {
+func (s *serviceProvider) GetUserService(ctx context.Context) *service.UserService {
 
 	if s.userService == nil {
-		s.userService = usersvc.New(
+		s.userService = service.NewUserService(
 			s.GetUserRepository(ctx),
 		)
 	}
@@ -104,28 +101,28 @@ func (s *serviceProvider) GetUserService(ctx context.Context) *usersvc.UserServi
 	return s.userService
 }
 
-func (s *serviceProvider) GetGRPCAuthImpl(ctx context.Context) *authgrpc.GrpcAuthImplementation {
+func (s *serviceProvider) GetGRPCAuthImpl(ctx context.Context) *delivery.AuthImplementation {
 
 	if s.authImpl == nil {
-		s.authImpl = authgrpc.New(s.GetAuthService(ctx))
+		s.authImpl = delivery.NewGrpcAuthImplementation(s.GetAuthService(ctx))
 	}
 
 	return s.authImpl
 }
 
-func (s *serviceProvider) GetGRPCAccessImpl(ctx context.Context) *accessgrpc.GrpcAccessImplementation {
+func (s *serviceProvider) GetGRPCAccessImpl(ctx context.Context) *delivery.AccessImplementation {
 
 	if s.accessImpl == nil {
-		s.accessImpl = accessgrpc.New(s.GetAuthService(ctx))
+		s.accessImpl = delivery.NewGrpcAccessImplementation(s.GetAuthService(ctx))
 	}
 
 	return s.accessImpl
 }
 
-func (s *serviceProvider) GetGRPCUserImpl(ctx context.Context) *usergrpc.GrpcUserImplementation {
+func (s *serviceProvider) GetGRPCUserImpl(ctx context.Context) *delivery.UserImplementation {
 
 	if s.userImpl == nil {
-		s.userImpl = usergrpc.New(s.GetUserService(ctx))
+		s.userImpl = delivery.NewGrpcUserImplementation(s.GetUserService(ctx))
 	}
 
 	return s.userImpl

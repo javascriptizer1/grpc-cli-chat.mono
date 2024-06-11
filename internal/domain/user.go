@@ -1,4 +1,4 @@
-package user
+package domain
 
 import (
 	"errors"
@@ -8,21 +8,21 @@ import (
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/bcrypt"
 )
 
-type Role uint16
+type UserRole uint16
 
 type User struct {
-	Id        uuid.UUID
+	ID        uuid.UUID
 	Name      string
 	Email     string
 	Password  string
-	Role      Role
+	Role      UserRole
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-func NewWithID(id uuid.UUID, name string, email string, password string, role Role, createdAt time.Time, updatedAt time.Time) (*User, error) {
+func NewUserWithID(id uuid.UUID, name string, email string, password string, role UserRole, createdAt time.Time, updatedAt time.Time) (*User, error) {
 	user := &User{
-		Id:        id,
+		ID:        id,
 		Name:      name,
 		Email:     email,
 		Password:  password,
@@ -34,11 +34,11 @@ func NewWithID(id uuid.UUID, name string, email string, password string, role Ro
 	return user, nil
 }
 
-func New(name string, email string, password string, role Role) (*User, error) {
+func NewUser(name string, email string, password string, role UserRole) (*User, error) {
 	now := time.Now().UTC()
 
 	user := &User{
-		Id:        uuid.New(),
+		ID:        uuid.New(),
 		Name:      name,
 		Email:     email,
 		Password:  password,

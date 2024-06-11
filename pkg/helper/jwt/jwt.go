@@ -6,13 +6,15 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/domain/user"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/domain"
 )
 
-func GenerateToken(user user.User, secret string, duration time.Duration) (string, error) {
+// TODO: pkg is independent on internal
+
+func GenerateToken(user domain.User, secret string, duration time.Duration) (string, error) {
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.Id,
+		"sub": user.ID,
 		"iss": "@j11er1",
 		"aud": strconv.Itoa(int(user.Role)),
 		"exp": time.Now().Add(time.Second * time.Duration(duration.Seconds())).Unix(),
@@ -30,7 +32,7 @@ func GenerateToken(user user.User, secret string, duration time.Duration) (strin
 
 func VerifyToken(token string, secret string) (jwt.Claims, error) {
 
-	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+	t, err := jwt.Parse(token, func(_ *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
 

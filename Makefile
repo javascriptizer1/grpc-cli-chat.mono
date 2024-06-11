@@ -1,3 +1,5 @@
+include .env
+
 lint:
 	golangci-lint run ./... --config .golangci.pipeline.yaml
 
@@ -73,4 +75,4 @@ vendor-proto:
 		fi
 
 migrations-up:
-	GOOSE_DBSTRING=postgresql://auth:testik@127.0.0.1:5432/auth?sslmode=disable goose -dir migrations/postgres postgres up
+	GOOSE_DBSTRING=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable goose -dir migrations/postgres postgres up

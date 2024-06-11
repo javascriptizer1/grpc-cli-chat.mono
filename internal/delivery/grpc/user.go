@@ -1,10 +1,11 @@
-package usergrpc
+package grpc
 
 import (
 	"context"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/interceptor"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/user_v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -12,8 +13,19 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (impl *GrpcUserImplementation) GetUserInfo(ctx context.Context, request *emptypb.Empty) (*user_v1.GetUserResponse, error) {
-	payload, ok := ctx.Value("payload").(jwt.Claims)
+type UserImplementation struct {
+	user_v1.UnimplementedUserServiceServer
+	userService UserService
+}
+
+func NewGrpcUserImplementation(userService UserService) *UserImplementation {
+	return &UserImplementation{
+		userService: userService,
+	}
+}
+
+func (impl *UserImplementation) GetUserInfo(ctx context.Context, _ *emptypb.Empty) (*user_v1.GetUserResponse, error) {
+	payload, ok := ctx.Value(interceptor.ContextKeyUserClaims).(jwt.Claims)
 
 	if !ok {
 		return nil, status.Errorf(codes.Internal, "missing required token")
@@ -25,14 +37,14 @@ func (impl *GrpcUserImplementation) GetUserInfo(ctx context.Context, request *em
 		return nil, status.Errorf(codes.Internal, "extract subject error")
 	}
 
-	u, err := impl.userService.OneById(ctx, uuid.MustParse(subject))
+	u, err := impl.userService.OneByID(ctx, uuid.MustParse(subject))
 
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "user not found")
 	}
 
 	return &user_v1.GetUserResponse{
-		Id:        u.Id.String(),
+		Id:        u.ID.String(),
 		Name:      u.Name,
 		Email:     u.Email,
 		Role:      user_v1.Role(u.Role),

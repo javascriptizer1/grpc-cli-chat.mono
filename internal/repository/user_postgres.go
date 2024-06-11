@@ -1,4 +1,4 @@
-package userrepo
+package repository
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/domain/user"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/domain"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -21,14 +21,14 @@ type UserRepository struct {
 	builder sq.StatementBuilderType
 }
 
-func New(db *sqlx.DB) *UserRepository {
+func NewUserRepository(db *sqlx.DB) *UserRepository {
 	return &UserRepository{
 		db:      db,
 		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 	}
 }
 
-func (r *UserRepository) Create(_ context.Context, input *user.User) error {
+func (r *UserRepository) Create(_ context.Context, input *domain.User) error {
 	query, args, err := r.builder.Insert(users).Columns(
 		"id",
 		"name",
@@ -38,7 +38,7 @@ func (r *UserRepository) Create(_ context.Context, input *user.User) error {
 		"created_at",
 		"updated_at",
 	).Values(
-		input.Id,
+		input.ID,
 		input.Name,
 		input.Email,
 		input.Password,
@@ -56,7 +56,7 @@ func (r *UserRepository) Create(_ context.Context, input *user.User) error {
 	return row.Err()
 }
 
-func (r *UserRepository) OneById(_ context.Context, id uuid.UUID) (u *user.User, err error) {
+func (r *UserRepository) OneByID(_ context.Context, id uuid.UUID) (u *domain.User, err error) {
 	var rawUser User
 
 	query, args, err := r.builder.
@@ -82,7 +82,7 @@ func (r *UserRepository) OneById(_ context.Context, id uuid.UUID) (u *user.User,
 	return rawUser.ToDomain(), nil
 }
 
-func (r *UserRepository) OneByEmail(_ context.Context, email string) (u *user.User, err error) {
+func (r *UserRepository) OneByEmail(_ context.Context, email string) (u *domain.User, err error) {
 	var rawUser User
 
 	query, args, err := r.builder.

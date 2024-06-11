@@ -48,3 +48,6 @@ issues:
   - exported func .* returns unexported type .*, which can be annoying to use
   - should have a package comment
   - don't use an underscore in package name
+  - 'exported: exported function .* should have comment or be unexported'
+  - 'exported: exported method .* should have comment or be unexported'
+  - 'exported: exported type .* should have comment or be unexported'

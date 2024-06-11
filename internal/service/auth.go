@@ -1,16 +1,37 @@
-package authsvc
+package service
 
 import (
 	"context"
 	"errors"
 
+	"time"
+
 	"github.com/google/uuid"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/domain/user"
-	serviceDto "github.com/javascriptizer1/grpc-cli-chat.backend/internal/service/auth/dto"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/domain"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/service/dto"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/jwt"
 )
 
-func (s *AuthService) Register(ctx context.Context, input serviceDto.RegisterInputDto) (id uuid.UUID, err error) {
+type AuthConfig struct {
+	AccessTokenSecretKey  string
+	AccessTokenDuration   time.Duration
+	RefreshTokenSecretKey string
+	RefreshTokenDuration  time.Duration
+}
+
+type AuthService struct {
+	userRepo UserRepository
+	config   AuthConfig
+}
+
+func NewAuthService(userRepo UserRepository, cfg AuthConfig) *AuthService {
+	return &AuthService{
+		userRepo: userRepo,
+		config:   cfg,
+	}
+}
+
+func (s *AuthService) Register(ctx context.Context, input dto.RegisterInputDto) (id uuid.UUID, err error) {
 	v, _ := s.userRepo.OneByEmail(ctx, input.Email)
 
 	if v != nil {
@@ -21,19 +42,23 @@ func (s *AuthService) Register(ctx context.Context, input serviceDto.RegisterInp
 		return id, errors.New("passwords don`t match")
 	}
 
-	u, err := user.New(input.Name, input.Email, input.Password, input.Role)
+	u, err := domain.NewUser(input.Name, input.Email, input.Password, input.Role)
 
 	if err != nil {
 		return id, err
 	}
 
-	u.HashPassword()
+	err = u.HashPassword()
+
+	if err != nil {
+		return id, err
+	}
 
 	if err = s.userRepo.Create(ctx, u); err != nil {
 		return id, err
 	}
 
-	return u.Id, nil
+	return u.ID, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, login string, password string) (string, error) {
@@ -47,7 +72,7 @@ func (s *AuthService) Login(ctx context.Context, login string, password string) 
 		return "", err
 	}
 
-	u, err := user.NewWithID(v.Id, v.Name, v.Email, v.Password, v.Role, v.CreatedAt, v.UpdatedAt)
+	u, err := domain.NewUserWithID(v.ID, v.Name, v.Email, v.Password, v.Role, v.CreatedAt, v.UpdatedAt)
 
 	if err != nil {
 		return "", err
@@ -69,19 +94,19 @@ func (s *AuthService) AccessToken(ctx context.Context, refreshToken string) (str
 		return "", errors.New("invalid refresh token")
 	}
 
-	stringId, err := claims.GetSubject()
+	stringID, err := claims.GetSubject()
 
 	if err != nil {
 		return "", err
 	}
 
-	id, err := uuid.Parse(stringId)
+	id, err := uuid.Parse(stringID)
 
 	if err != nil {
 		return "", err
 	}
 
-	u, err := s.userRepo.OneById(ctx, uuid.UUID(id))
+	u, err := s.userRepo.OneByID(ctx, uuid.UUID(id))
 
 	if err != nil {
 		return "", err
@@ -103,19 +128,19 @@ func (s *AuthService) RefreshToken(ctx context.Context, oldRefreshToken string) 
 		return "", errors.New("invalid refresh token")
 	}
 
-	stringId, err := claims.GetSubject()
+	stringID, err := claims.GetSubject()
 
 	if err != nil {
 		return "", err
 	}
 
-	id, err := uuid.Parse(stringId)
+	id, err := uuid.Parse(stringID)
 
 	if err != nil {
 		return "", err
 	}
 
-	u, err := s.userRepo.OneById(ctx, uuid.UUID(id))
+	u, err := s.userRepo.OneByID(ctx, uuid.UUID(id))
 
 	if err != nil {
 		return "", err
@@ -130,6 +155,6 @@ func (s *AuthService) RefreshToken(ctx context.Context, oldRefreshToken string) 
 	return refreshToken, nil
 }
 
-func (s *AuthService) Check(ctx context.Context, endpoint string, role user.Role) bool {
-	return true
+func (s *AuthService) Check(_ context.Context, endpoint string, role domain.UserRole) bool {
+	return endpoint != "" && role != 0
 }

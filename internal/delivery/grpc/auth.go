@@ -1,21 +1,32 @@
-package authgrpc
+package grpc
 
 import (
 	"context"
 
-	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/domain/user"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/service/auth/dto"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/domain"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/service/dto"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/auth_v1"
 )
 
-func (impl *GrpcAuthImplementation) Register(ctx context.Context, request *auth_v1.RegisterRequest) (*auth_v1.RegisterResponse, error) {
+type AuthImplementation struct {
+	auth_v1.UnimplementedAuthServiceServer
+	authService AuthService
+}
+
+func NewGrpcAuthImplementation(authService AuthService) *AuthImplementation {
+	return &AuthImplementation{
+		authService: authService,
+	}
+}
+
+func (impl *AuthImplementation) Register(ctx context.Context, request *auth_v1.RegisterRequest) (*auth_v1.RegisterResponse, error) {
 
 	id, err := impl.authService.Register(ctx, dto.RegisterInputDto{
 		Name:            request.GetName(),
 		Email:           request.GetEmail(),
 		Password:        request.GetPassword(),
 		PasswordConfirm: request.GetPasswordConfirm(),
-		Role:            user.Role(request.GetRole()),
+		Role:            domain.UserRole(request.GetRole()),
 	})
 
 	if err != nil {
@@ -27,7 +38,7 @@ func (impl *GrpcAuthImplementation) Register(ctx context.Context, request *auth_
 	}, nil
 }
 
-func (impl *GrpcAuthImplementation) Login(ctx context.Context, request *auth_v1.LoginRequest) (*auth_v1.LoginResponse, error) {
+func (impl *AuthImplementation) Login(ctx context.Context, request *auth_v1.LoginRequest) (*auth_v1.LoginResponse, error) {
 
 	refreshToken, err := impl.authService.Login(ctx, request.GetLogin(), request.GetPassword())
 
@@ -40,7 +51,7 @@ func (impl *GrpcAuthImplementation) Login(ctx context.Context, request *auth_v1.
 	}, nil
 }
 
-func (impl *GrpcAuthImplementation) GetRefreshToken(ctx context.Context, request *auth_v1.GetRefreshTokenRequest) (*auth_v1.GetRefreshTokenResponse, error) {
+func (impl *AuthImplementation) GetRefreshToken(ctx context.Context, request *auth_v1.GetRefreshTokenRequest) (*auth_v1.GetRefreshTokenResponse, error) {
 
 	refreshToken, err := impl.authService.RefreshToken(ctx, request.GetOldRefreshToken())
 
@@ -53,7 +64,7 @@ func (impl *GrpcAuthImplementation) GetRefreshToken(ctx context.Context, request
 	}, nil
 }
 
-func (impl *GrpcAuthImplementation) GetAccessToken(ctx context.Context, request *auth_v1.GetAccessTokenRequest) (*auth_v1.GetAccessTokenResponse, error) {
+func (impl *AuthImplementation) GetAccessToken(ctx context.Context, request *auth_v1.GetAccessTokenRequest) (*auth_v1.GetAccessTokenResponse, error) {
 
 	accessToken, err := impl.authService.AccessToken(ctx, request.GetRefreshToken())
 
