@@ -635,8 +635,6 @@ func (m *SendMessageRequest) validate(all bool) error {
 
 	// no validation rules for ChatId
 
-	// no validation rules for UserId
-
 	// no validation rules for Text
 
 	if all {

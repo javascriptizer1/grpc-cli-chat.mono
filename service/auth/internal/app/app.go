@@ -150,6 +150,8 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 }
 
 func (a *App) runGRPCServer() error {
+	logger.Info("GRPC server is running on " + a.serviceProvider.GetConfig().GRPC.HostPort())
+
 	l, err := net.Listen("tcp", a.serviceProvider.GetConfig().GRPC.HostPort())
 
 	if err != nil {
@@ -161,8 +163,6 @@ func (a *App) runGRPCServer() error {
 	if err != nil {
 		return err
 	}
-
-	logger.Info("GRPC server is running on " + a.serviceProvider.GetConfig().GRPC.HostPort())
 
 	return nil
 }
