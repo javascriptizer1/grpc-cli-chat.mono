@@ -2,10 +2,9 @@ package cmd
 
 import (
 	"context"
-	"log"
 
-	"github.com/fatih/color"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
+	colog "github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -17,29 +16,33 @@ func newLoginCommand(ctx context.Context, sp *app.ServiceProvider) *cobra.Comman
 			login, err := cmd.Flags().GetString("login")
 
 			if err != nil {
-				log.Print(color.RedString("failed to get login: %s\n", err.Error()))
+				colog.Fatal("failed to get login: %s", err.Error())
 			}
 
 			password, err := cmd.Flags().GetString("password")
 
 			if err != nil {
-				log.Print(color.RedString("failed to get password: %s\n", err.Error()))
+				colog.Fatal("failed to get password: %s", err.Error())
 			}
 
-			authClient := sp.AuthClient(ctx)
-
-			refreshToken, err := authClient.Login(context.Background(), login, password)
+			refreshToken, err := sp.HandlerService(ctx).Login(ctx, login, password)
 
 			if err != nil {
-				log.Print(color.RedString("Could not login: %v", err))
+				colog.Error("could not login: %v", err)
 			} else {
-				log.Print(color.GreenString("Logged in, refresh token: %s\n", refreshToken))
+				colog.Success("logged in, refresh token: %s", refreshToken)
 			}
 		},
 	}
 
-	cmd.Flags().String("email", "", "Email of the user")
-	cmd.Flags().String("password", "", "Password of the user")
+	addLoginFlags(cmd)
 
 	return cmd
+}
+
+func addLoginFlags(cmd *cobra.Command) {
+	cmd.Flags().StringP("login", "l", "", "Email of the user")
+	cmd.Flags().StringP("password", "p", "", "Password of the user")
+	cmd.MarkFlagRequired("login")
+	cmd.MarkFlagRequired("password")
 }

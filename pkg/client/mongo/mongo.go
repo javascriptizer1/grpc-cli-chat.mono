@@ -22,7 +22,7 @@ func (c *Config) toURL() string {
 
 func New(ctx context.Context, config Config) (*mongo.Database, error) {
 	clientOption := options.Client().ApplyURI(config.toURL())
-	client, err := mongo.Connect(context.Background(), clientOption)
+	client, err := mongo.Connect(ctx, clientOption)
 
 	if err != nil {
 		return nil, err

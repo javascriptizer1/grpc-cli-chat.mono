@@ -2,11 +2,9 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"log"
 
-	"github.com/fatih/color"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
+	colog "github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -15,31 +13,22 @@ func newConnectChatCommand(ctx context.Context, sp *app.ServiceProvider) *cobra.
 		Use:   "connect-chat",
 		Short: "Connect to a chat",
 		Run: func(cmd *cobra.Command, _ []string) {
-			chatID, err := cmd.Flags().GetString("chat_id")
+			chatID, err := cmd.Flags().GetString("chat-id")
 
 			if err != nil {
-				log.Print(color.RedString("failed to get chat id: %s\n", err.Error()))
+				colog.Fatal("failed to get chat id: %s", err.Error())
 			}
 
-			stream, err := sp.ChatClient(ctx).ConnectChat(context.Background(), chatID)
-
-			if err != nil {
-				log.Print(color.RedString("Could not connect to chat: %v", err))
-			}
-
-			for {
-				msg, err := stream.Recv()
-
-				if err != nil {
-					log.Print(color.RedString("Error receiving message: %v", err))
-				} else {
-					fmt.Print(color.WhiteString("%s: %s\n", msg.Sender.Name, msg.Text))
-				}
-			}
+			sp.HandlerService(ctx).ConnectChat(ctx, chatID)
 		},
 	}
 
-	cmd.Flags().String("chat_id", "", "ID of the chat")
+	addConnectChatFlags(cmd)
 
 	return cmd
+}
+
+func addConnectChatFlags(cmd *cobra.Command) {
+	cmd.Flags().String("chat-id", "", "ID of the chat")
+	cmd.MarkFlagRequired("chat-id")
 }

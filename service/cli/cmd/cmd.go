@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"context"
-	"log"
 
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
+	colog "github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -30,6 +30,6 @@ func Execute() {
 	)
 
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatalf("failed to execute root command: %s", err.Error())
+		colog.Fatal("failed to execute root command: %s", err.Error())
 	}
 }

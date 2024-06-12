@@ -10,6 +10,7 @@ import (
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/closer"
 	client "github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/client/grpc"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/config"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/handler"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -20,6 +21,8 @@ type ServiceProvider struct {
 	authClient AuthClient
 	chatClient ChatClient
 	userClient UserClient
+
+	handlerService Handler
 
 	grpcAuthClientConn grpc.ClientConnInterface
 	grpcChatClientConn grpc.ClientConnInterface
@@ -101,4 +104,15 @@ func (s *ServiceProvider) ChatClient(_ context.Context) ChatClient {
 	}
 
 	return s.chatClient
+}
+
+func (s *ServiceProvider) HandlerService(ctx context.Context) Handler {
+	if s.handlerService == nil {
+		s.handlerService = handler.New(
+			s.AuthClient(ctx),
+			s.ChatClient(ctx),
+		)
+	}
+
+	return s.handlerService
 }
