@@ -1,0 +1,48 @@
+syntax="proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+package chatv1;
+
+option go_package = "../../../../auth/pkg/grpc/chat_v1;chatv1";
+
+
+service ChatService {
+  rpc CreateChat(CreateChatRequest) returns (CreateChatResponse);
+  rpc ConnectChat (ConnectChatRequest) returns (stream Message);
+  rpc SendMessage (SendMessageRequest) returns (google.protobuf.Empty);
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message Message {
+  string id = 1;
+  User sender = 2;
+  string text = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message CreateChatRequest {
+  repeated string emails = 1;
+}
+
+message CreateChatResponse {
+  string id = 1;
+}
+
+message ConnectChatRequest {
+  string user_id = 1;
+  string chat_id = 2;
+}
+
+message SendMessageRequest {
+  string chat_id = 1;
+  string user_id = 2;
+  string text = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}

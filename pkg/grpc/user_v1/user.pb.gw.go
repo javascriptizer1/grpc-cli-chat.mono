@@ -2,11 +2,11 @@
 // source: user.proto
 
 /*
-Package user_v1 is a reverse proxy.
+Package userv1 is a reverse proxy.
 
 It translates gRPC into RESTful JSON APIs.
 */
-package user_v1
+package userv1
 
 import (
 	"context"
@@ -64,7 +64,7 @@ func RegisterUserServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/user_v1.UserService/GetUserInfo", runtime.WithHTTPPathPattern("/v1/users/my-info"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/userv1.UserService/GetUserInfo", runtime.WithHTTPPathPattern("/v1/users/my-info"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -128,7 +128,7 @@ func RegisterUserServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/user_v1.UserService/GetUserInfo", runtime.WithHTTPPathPattern("/v1/users/my-info"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/userv1.UserService/GetUserInfo", runtime.WithHTTPPathPattern("/v1/users/my-info"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

@@ -51,3 +51,4 @@ issues:
   - 'exported: exported function .* should have comment or be unexported'
   - 'exported: exported method .* should have comment or be unexported'
   - 'exported: exported type .* should have comment or be unexported'
+  - 'exported: exported const .* should have comment or be unexported'

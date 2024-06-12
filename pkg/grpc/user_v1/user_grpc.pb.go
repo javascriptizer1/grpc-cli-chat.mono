@@ -4,7 +4,7 @@
 // - protoc             v5.27.0
 // source: user.proto
 
-package user_v1
+package userv1
 
 import (
 	context "context"
@@ -20,7 +20,7 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	UserService_GetUserInfo_FullMethodName = "/user_v1.UserService/GetUserInfo"
+	UserService_GetUserInfo_FullMethodName = "/userv1.UserService/GetUserInfo"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -98,7 +98,7 @@ func _UserService_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var UserService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "user_v1.UserService",
+	ServiceName: "userv1.UserService",
 	HandlerType: (*UserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

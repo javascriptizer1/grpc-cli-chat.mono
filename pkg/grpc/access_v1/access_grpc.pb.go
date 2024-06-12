@@ -4,7 +4,7 @@
 // - protoc             v5.27.0
 // source: access.proto
 
-package access_v1
+package accessv1
 
 import (
 	context "context"
@@ -20,7 +20,7 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	AccessService_Check_FullMethodName = "/access_v1.AccessService/Check"
+	AccessService_Check_FullMethodName = "/accessv1.AccessService/Check"
 )
 
 // AccessServiceClient is the client API for AccessService service.
@@ -98,7 +98,7 @@ func _AccessService_Check_Handler(srv interface{}, ctx context.Context, dec func
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AccessService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "access_v1.AccessService",
+	ServiceName: "accessv1.AccessService",
 	HandlerType: (*AccessServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

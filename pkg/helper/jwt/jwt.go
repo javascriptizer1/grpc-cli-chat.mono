@@ -2,21 +2,22 @@ package jwt
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/internal/domain"
 )
 
-// TODO: pkg is independent on internal
+type UserClaims struct {
+	ID   string
+	Role string
+}
 
-func GenerateToken(user domain.User, secret string, duration time.Duration) (string, error) {
+func GenerateToken(user UserClaims, secret string, duration time.Duration) (string, error) {
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": user.ID,
 		"iss": "@j11er1",
-		"aud": strconv.Itoa(int(user.Role)),
+		"aud": user.Role,
 		"exp": time.Now().Add(time.Second * time.Duration(duration.Seconds())).Unix(),
 		"iat": time.Now().Unix(),
 	})
