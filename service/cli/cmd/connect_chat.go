@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/fatih/color"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
 	"github.com/spf13/cobra"
 )
@@ -13,23 +14,27 @@ func newConnectChatCommand(ctx context.Context, sp *app.ServiceProvider) *cobra.
 	cmd := &cobra.Command{
 		Use:   "connect-chat",
 		Short: "Connect to a chat",
-		Run: func(cmd *cobra.Command, args []string) {
-			chatID, _ := cmd.Flags().GetString("chat_id")
+		Run: func(cmd *cobra.Command, _ []string) {
+			chatID, err := cmd.Flags().GetString("chat_id")
+
+			if err != nil {
+				log.Print(color.RedString("failed to get chat id: %s\n", err.Error()))
+			}
 
 			stream, err := sp.ChatClient(ctx).ConnectChat(context.Background(), chatID)
 
 			if err != nil {
-				log.Fatalf("Could not connect to chat: %v", err)
+				log.Print(color.RedString("Could not connect to chat: %v", err))
 			}
 
 			for {
 				msg, err := stream.Recv()
 
 				if err != nil {
-					log.Fatalf("Error receiving message: %v", err)
+					log.Print(color.RedString("Error receiving message: %v", err))
+				} else {
+					fmt.Print(color.WhiteString("%s: %s\n", msg.Sender.Name, msg.Text))
 				}
-
-				fmt.Printf("Message from %s: %s\n", msg.Sender.Name, msg.Text)
 			}
 		},
 	}

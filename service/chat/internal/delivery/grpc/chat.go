@@ -2,10 +2,12 @@ package grpc
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"sync"
 
 	chatv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/chat_v1"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/logger"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -52,7 +54,7 @@ func (impl *ChatImplementation) ConnectChat(request *chatv1.ConnectChatRequest, 
 
 	impl.mu.Unlock()
 
-	log.Printf("User %s connected to chat %s", request.GetUserId(), request.GetChatId())
+	logger.Info(fmt.Sprintf("User %s connected to chat %s", request.GetUserId(), request.GetChatId()))
 
 	defer func() {
 		impl.mu.Lock()
@@ -64,7 +66,7 @@ func (impl *ChatImplementation) ConnectChat(request *chatv1.ConnectChatRequest, 
 
 		impl.mu.Unlock()
 
-		log.Printf("User %s disconnected from chat %s", request.GetUserId(), request.GetChatId())
+		logger.Info(fmt.Sprintf("User %s disconnected from chat %s", request.GetUserId(), request.GetChatId()))
 		close(ch)
 	}()
 
@@ -72,7 +74,7 @@ func (impl *ChatImplementation) ConnectChat(request *chatv1.ConnectChatRequest, 
 		select {
 		case msg := <-ch:
 			if err := stream.Send(msg); err != nil {
-				log.Printf("Error sending message to client: %v", err)
+				logger.Error("Error sending message to client", zap.Error(err))
 				return err
 			}
 		case <-stream.Context().Done():
@@ -116,7 +118,7 @@ func (impl *ChatImplementation) SendMessage(ctx context.Context, request *chatv1
 			select {
 			case ch <- msgProto:
 			default:
-				log.Printf("Warning: message channel for user is full, dropping message")
+				logger.Warn("Warning: message channel for user is full, dropping message")
 			}
 		}
 	}

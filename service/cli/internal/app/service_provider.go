@@ -17,12 +17,12 @@ import (
 type ServiceProvider struct {
 	config *config.Config
 
-	authClient *client.AuthClient
-	chatClient *client.ChatClient
-	userClient *client.UserClient
+	authClient AuthClient
+	chatClient ChatClient
+	userClient UserClient
 
-	grpcAuthClientConn *grpc.ClientConn
-	grpcChatClientConn *grpc.ClientConn
+	grpcAuthClientConn grpc.ClientConnInterface
+	grpcChatClientConn grpc.ClientConnInterface
 }
 
 func NewServiceProvider() *ServiceProvider {
@@ -39,7 +39,7 @@ func (s *ServiceProvider) Config() *config.Config {
 	return s.config
 }
 
-func (s *ServiceProvider) GRPCAuthClientConn() *grpc.ClientConn {
+func (s *ServiceProvider) GRPCAuthClientConn() grpc.ClientConnInterface {
 
 	if s.grpcAuthClientConn == nil {
 		conn, err := grpc.NewClient(
@@ -59,7 +59,7 @@ func (s *ServiceProvider) GRPCAuthClientConn() *grpc.ClientConn {
 	return s.grpcAuthClientConn
 }
 
-func (s *ServiceProvider) GRPCChatClientConn() *grpc.ClientConn {
+func (s *ServiceProvider) GRPCChatClientConn() grpc.ClientConnInterface {
 
 	if s.grpcChatClientConn == nil {
 		conn, err := grpc.NewClient(
@@ -79,7 +79,7 @@ func (s *ServiceProvider) GRPCChatClientConn() *grpc.ClientConn {
 	return s.grpcChatClientConn
 }
 
-func (s *ServiceProvider) AuthClient(ctx context.Context) *client.AuthClient {
+func (s *ServiceProvider) AuthClient(_ context.Context) AuthClient {
 	if s.authClient == nil {
 		s.authClient = client.NewAuthClient(authv1.NewAuthServiceClient(s.GRPCAuthClientConn()))
 	}
@@ -87,7 +87,7 @@ func (s *ServiceProvider) AuthClient(ctx context.Context) *client.AuthClient {
 	return s.authClient
 }
 
-func (s *ServiceProvider) UserClient(ctx context.Context) *client.UserClient {
+func (s *ServiceProvider) UserClient(_ context.Context) UserClient {
 	if s.userClient == nil {
 		s.userClient = client.NewUserClient(userv1.NewUserServiceClient(s.GRPCAuthClientConn()))
 	}
@@ -95,7 +95,7 @@ func (s *ServiceProvider) UserClient(ctx context.Context) *client.UserClient {
 	return s.userClient
 }
 
-func (s *ServiceProvider) ChatClient(ctx context.Context) *client.ChatClient {
+func (s *ServiceProvider) ChatClient(_ context.Context) ChatClient {
 	if s.chatClient == nil {
 		s.chatClient = client.NewChatClient(chatv1.NewChatServiceClient(s.GRPCChatClientConn()))
 	}

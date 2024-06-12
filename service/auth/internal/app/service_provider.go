@@ -18,10 +18,10 @@ type serviceProvider struct {
 	config *config.Config
 
 	dbClient       *sqlx.DB
-	userRepository *repository.UserRepository
+	userRepository UserRepository
 
-	authService *service.AuthService
-	userService *service.UserService
+	authService AuthService
+	userService UserService
 
 	authImpl   *delivery.AuthImplementation
 	accessImpl *delivery.AccessImplementation
@@ -32,7 +32,7 @@ func newServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }
 
-func (s *serviceProvider) GetConfig() *config.Config {
+func (s *serviceProvider) Config() *config.Config {
 
 	if s.config == nil {
 		cfg := config.MustLoad()
@@ -42,15 +42,15 @@ func (s *serviceProvider) GetConfig() *config.Config {
 	return s.config
 }
 
-func (s *serviceProvider) GetPostgresClient(_ context.Context) *sqlx.DB {
+func (s *serviceProvider) PostgresClient(_ context.Context) *sqlx.DB {
 	if s.dbClient == nil {
 
 		db, err := postgres.New(postgres.Config{
-			Host:     s.GetConfig().DB.Host,
-			Port:     s.GetConfig().DB.Port,
-			User:     s.GetConfig().DB.User,
-			Password: s.GetConfig().DB.Password,
-			Name:     s.GetConfig().DB.Name,
+			Host:     s.Config().DB.Host,
+			Port:     s.Config().DB.Port,
+			User:     s.Config().DB.User,
+			Password: s.Config().DB.Password,
+			Name:     s.Config().DB.Name,
 		})
 
 		if err != nil {
@@ -65,64 +65,64 @@ func (s *serviceProvider) GetPostgresClient(_ context.Context) *sqlx.DB {
 	return s.dbClient
 }
 
-func (s *serviceProvider) GetUserRepository(ctx context.Context) *repository.UserRepository {
+func (s *serviceProvider) UserRepository(ctx context.Context) UserRepository {
 
 	if s.userRepository == nil {
-		s.userRepository = repository.NewUserRepository(s.GetPostgresClient(ctx))
+		s.userRepository = repository.NewUserRepository(s.PostgresClient(ctx))
 	}
 
 	return s.userRepository
 }
 
-func (s *serviceProvider) GetAuthService(ctx context.Context) *service.AuthService {
+func (s *serviceProvider) AuthService(ctx context.Context) AuthService {
 
 	if s.authService == nil {
 		s.authService = service.NewAuthService(
-			s.GetUserRepository(ctx),
+			s.UserRepository(ctx),
 			service.AuthConfig{
-				AccessTokenSecretKey:  s.GetConfig().JWT.AccessSecretKey,
-				AccessTokenDuration:   s.GetConfig().JWT.AccessDuration,
-				RefreshTokenSecretKey: s.GetConfig().JWT.RefreshSecretKey,
-				RefreshTokenDuration:  s.GetConfig().JWT.RefreshDuration,
+				AccessTokenSecretKey:  s.Config().JWT.AccessSecretKey,
+				AccessTokenDuration:   s.Config().JWT.AccessDuration,
+				RefreshTokenSecretKey: s.Config().JWT.RefreshSecretKey,
+				RefreshTokenDuration:  s.Config().JWT.RefreshDuration,
 			})
 	}
 
 	return s.authService
 }
 
-func (s *serviceProvider) GetUserService(ctx context.Context) *service.UserService {
+func (s *serviceProvider) UserService(ctx context.Context) UserService {
 
 	if s.userService == nil {
 		s.userService = service.NewUserService(
-			s.GetUserRepository(ctx),
+			s.UserRepository(ctx),
 		)
 	}
 
 	return s.userService
 }
 
-func (s *serviceProvider) GetGRPCAuthImpl(ctx context.Context) *delivery.AuthImplementation {
+func (s *serviceProvider) GRPCAuthImpl(ctx context.Context) *delivery.AuthImplementation {
 
 	if s.authImpl == nil {
-		s.authImpl = delivery.NewGrpcAuthImplementation(s.GetAuthService(ctx))
+		s.authImpl = delivery.NewGrpcAuthImplementation(s.AuthService(ctx))
 	}
 
 	return s.authImpl
 }
 
-func (s *serviceProvider) GetGRPCAccessImpl(ctx context.Context) *delivery.AccessImplementation {
+func (s *serviceProvider) GRPCAccessImpl(ctx context.Context) *delivery.AccessImplementation {
 
 	if s.accessImpl == nil {
-		s.accessImpl = delivery.NewGrpcAccessImplementation(s.GetAuthService(ctx))
+		s.accessImpl = delivery.NewGrpcAccessImplementation(s.AuthService(ctx))
 	}
 
 	return s.accessImpl
 }
 
-func (s *serviceProvider) GetGRPCUserImpl(ctx context.Context) *delivery.UserImplementation {
+func (s *serviceProvider) GRPCUserImpl(ctx context.Context) *delivery.UserImplementation {
 
 	if s.userImpl == nil {
-		s.userImpl = delivery.NewGrpcUserImplementation(s.GetUserService(ctx))
+		s.userImpl = delivery.NewGrpcUserImplementation(s.UserService(ctx))
 	}
 
 	return s.userImpl

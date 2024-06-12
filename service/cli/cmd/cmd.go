@@ -9,7 +9,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:     "jzer",
+	Use:     "gchat",
 	Short:   "CLI client for chat service",
 	Version: "0.0.1",
 }

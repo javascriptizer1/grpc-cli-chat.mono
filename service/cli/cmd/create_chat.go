@@ -1,11 +1,10 @@
-// cmd/create_chat.go
 package cmd
 
 import (
 	"context"
-	"fmt"
 	"log"
 
+	"github.com/fatih/color"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
 	"github.com/spf13/cobra"
 )
@@ -14,16 +13,20 @@ func newCreateChatCommand(ctx context.Context, sp *app.ServiceProvider) *cobra.C
 	cmd := &cobra.Command{
 		Use:   "create-chat",
 		Short: "Create a new chat",
-		Run: func(cmd *cobra.Command, args []string) {
-			emails, _ := cmd.Flags().GetStringArray("emails")
+		Run: func(cmd *cobra.Command, _ []string) {
+			emails, err := cmd.Flags().GetStringArray("emails")
+
+			if err != nil {
+				log.Print(color.RedString("failed to get emails: %s\n", err.Error()))
+			}
 
 			id, err := sp.ChatClient(ctx).CreateChat(context.Background(), emails)
 
 			if err != nil {
-				log.Fatalf("Could not create chat: %v", err)
+				log.Print(color.RedString("Could not create chat: %v", err))
+			} else {
+				log.Print(color.GreenString("Chat created with ID: %s\n", id))
 			}
-
-			fmt.Printf("Chat created with ID: %s\n", id)
 		},
 	}
 
