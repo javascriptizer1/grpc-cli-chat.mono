@@ -6,7 +6,7 @@ import "google/api/http.proto";
 
 package accessv1;
 
-option go_package = "../../../../auth/pkg/grpc/access_v1;accessv1";
+option go_package = "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/access_v1;accessv1";
 
 
 service AccessService {
