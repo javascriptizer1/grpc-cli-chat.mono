@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"log"
 
 	mongoClient "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/client/mongo"
 	accessv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/access_v1"
@@ -12,9 +11,11 @@ import (
 	grpcClient "github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/client/grpc"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/config"
 	delivery "github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/delivery/grpc"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/logger"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/repository"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/service"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -22,18 +23,18 @@ import (
 type serviceProvider struct {
 	config *config.Config
 
-	grpcClientConn *grpc.ClientConn
+	grpcClientConn grpc.ClientConnInterface
 
 	dbClient *mongo.Database
 
-	chatRepo    *repository.ChatRepository
-	messageRepo *repository.MessageRepository
+	chatRepo    ChatRepository
+	messageRepo MessageRepository
 
-	chatService *service.ChatService
+	chatService ChatService
 
-	authClient   *grpcClient.AuthClient
-	accessClient *grpcClient.AccessClient
-	userClient   *grpcClient.UserClient
+	authClient   AuthClient
+	accessClient AccessClient
+	userClient   UserClient
 
 	chatImplementation *delivery.ChatImplementation
 }
@@ -52,16 +53,16 @@ func (s *serviceProvider) Config() *config.Config {
 	return s.config
 }
 
-func (s *serviceProvider) GRPCClientConn() *grpc.ClientConn {
+func (s *serviceProvider) GRPCClientConn() grpc.ClientConnInterface {
 
 	if s.grpcClientConn == nil {
 		conn, err := grpc.NewClient(
-			s.Config().GRPCClient.HostPort(),
+			s.Config().GRPCAuth.HostPort(),
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
 
 		if err != nil {
-			log.Fatalf("failed to connect %s: %s", s.Config().GRPCClient.HostPort(), err.Error())
+			logger.Fatal("failed to connect "+s.Config().GRPCAuth.HostPort(), zap.String("err", err.Error()))
 		}
 
 		s.grpcClientConn = conn
@@ -84,7 +85,7 @@ func (s *serviceProvider) MongoClient(ctx context.Context) *mongo.Database {
 		})
 
 		if err != nil {
-			log.Fatalf("failed to start up db: %v", err)
+			logger.Fatal("failed to start up db", zap.Error(err))
 		}
 
 		s.dbClient = db
@@ -93,7 +94,7 @@ func (s *serviceProvider) MongoClient(ctx context.Context) *mongo.Database {
 	return s.dbClient
 }
 
-func (s *serviceProvider) ChatRepository(ctx context.Context) *repository.ChatRepository {
+func (s *serviceProvider) ChatRepository(ctx context.Context) ChatRepository {
 
 	if s.chatRepo == nil {
 		s.chatRepo = repository.NewChatRepository(s.MongoClient(ctx))
@@ -102,7 +103,7 @@ func (s *serviceProvider) ChatRepository(ctx context.Context) *repository.ChatRe
 	return s.chatRepo
 }
 
-func (s *serviceProvider) MessageRepository(ctx context.Context) *repository.MessageRepository {
+func (s *serviceProvider) MessageRepository(ctx context.Context) MessageRepository {
 
 	if s.messageRepo == nil {
 		s.messageRepo = repository.NewMessageRepository(s.MongoClient(ctx))
@@ -111,7 +112,7 @@ func (s *serviceProvider) MessageRepository(ctx context.Context) *repository.Mes
 	return s.messageRepo
 }
 
-func (s *serviceProvider) ChatService(ctx context.Context) *service.ChatService {
+func (s *serviceProvider) ChatService(ctx context.Context) ChatService {
 
 	if s.chatService == nil {
 
@@ -125,7 +126,7 @@ func (s *serviceProvider) ChatService(ctx context.Context) *service.ChatService 
 	return s.chatService
 }
 
-func (s *serviceProvider) AuthClient(_ context.Context) *grpcClient.AuthClient {
+func (s *serviceProvider) AuthClient(_ context.Context) AuthClient {
 
 	if s.authClient == nil {
 		s.authClient = grpcClient.NewAuthClient(authv1.NewAuthServiceClient(s.GRPCClientConn()))
@@ -134,7 +135,7 @@ func (s *serviceProvider) AuthClient(_ context.Context) *grpcClient.AuthClient {
 	return s.authClient
 }
 
-func (s *serviceProvider) AccessClient(_ context.Context) *grpcClient.AccessClient {
+func (s *serviceProvider) AccessClient(_ context.Context) AccessClient {
 
 	if s.accessClient == nil {
 		s.accessClient = grpcClient.NewAccessClient(accessv1.NewAccessServiceClient(s.GRPCClientConn()))
@@ -143,7 +144,7 @@ func (s *serviceProvider) AccessClient(_ context.Context) *grpcClient.AccessClie
 	return s.accessClient
 }
 
-func (s *serviceProvider) UserClient(_ context.Context) *grpcClient.UserClient {
+func (s *serviceProvider) UserClient(_ context.Context) UserClient {
 
 	if s.userClient == nil {
 		s.userClient = grpcClient.NewUserClient(userv1.NewUserServiceClient(s.GRPCClientConn()))

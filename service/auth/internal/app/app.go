@@ -96,7 +96,7 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initLogger(_ context.Context) error {
-	logger.Init(a.serviceProvider.GetConfig().Env)
+	logger.Init(a.serviceProvider.Config().Env)
 
 	return nil
 }
@@ -105,16 +105,16 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	a.grpcServer = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptor.LogInterceptor,
-			interceptor.NewAuthInterceptor(a.serviceProvider.GetConfig().JWT.AccessSecretKey).Unary,
+			interceptor.NewAuthInterceptor(a.serviceProvider.Config().JWT.AccessSecretKey).Unary,
 			interceptor.ValidateInterceptor,
 		),
 	)
 
 	reflection.Register(a.grpcServer)
 
-	authv1.RegisterAuthServiceServer(a.grpcServer, a.serviceProvider.GetGRPCAuthImpl(ctx))
-	accessv1.RegisterAccessServiceServer(a.grpcServer, a.serviceProvider.GetGRPCAccessImpl(ctx))
-	userv1.RegisterUserServiceServer(a.grpcServer, a.serviceProvider.GetGRPCUserImpl(ctx))
+	authv1.RegisterAuthServiceServer(a.grpcServer, a.serviceProvider.GRPCAuthImpl(ctx))
+	accessv1.RegisterAccessServiceServer(a.grpcServer, a.serviceProvider.GRPCAccessImpl(ctx))
+	userv1.RegisterUserServiceServer(a.grpcServer, a.serviceProvider.GRPCUserImpl(ctx))
 
 	return nil
 }
@@ -126,7 +126,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	err := authv1.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, a.serviceProvider.GetConfig().GRPC.Host, opts)
+	err := authv1.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, a.serviceProvider.Config().GRPC.Host, opts)
 
 	if err != nil {
 		return err
@@ -140,17 +140,19 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	})
 
 	a.httpServer = &http.Server{
-		Addr:              a.serviceProvider.GetConfig().HTTP.HostPort(),
+		Addr:              a.serviceProvider.Config().HTTP.HostPort(),
 		Handler:           corsMiddleware.Handler(mux),
 		ReadHeaderTimeout: 3 * time.Second,
-		WriteTimeout:      a.serviceProvider.GetConfig().HTTP.Timeout,
+		WriteTimeout:      a.serviceProvider.Config().HTTP.Timeout,
 	}
 
 	return nil
 }
 
 func (a *App) runGRPCServer() error {
-	l, err := net.Listen("tcp", a.serviceProvider.GetConfig().GRPC.HostPort())
+	logger.Info("GRPC server is running on " + a.serviceProvider.Config().GRPC.HostPort())
+
+	l, err := net.Listen("tcp", a.serviceProvider.Config().GRPC.HostPort())
 
 	if err != nil {
 		return err
@@ -162,13 +164,11 @@ func (a *App) runGRPCServer() error {
 		return err
 	}
 
-	logger.Info("GRPC server is running on " + a.serviceProvider.GetConfig().GRPC.HostPort())
-
 	return nil
 }
 
 func (a *App) runHTTPServer() error {
-	logger.Info("HTTP server is running on " + a.serviceProvider.GetConfig().HTTP.HostPort())
+	logger.Info("HTTP server is running on " + a.serviceProvider.Config().HTTP.HostPort())
 
 	err := a.httpServer.ListenAndServe()
 

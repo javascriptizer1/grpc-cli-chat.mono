@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"sync"
 
@@ -11,6 +10,8 @@ import (
 	chatv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/chat_v1"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/closer"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/interceptor"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/logger"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -43,7 +44,7 @@ func (a *App) Run() error {
 	go func() {
 		defer wg.Done()
 		if err := a.runGRPCServer(); err != nil {
-			log.Fatalf("run GRPC server: %s", err.Error())
+			logger.Fatal("run GRPC server: %s", zap.Any("err", err.Error()))
 		}
 	}()
 
@@ -55,6 +56,7 @@ func (a *App) Run() error {
 func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
 		a.initServiceProvider,
+		a.initLogger,
 		a.initGRPCServer,
 	}
 
@@ -69,6 +71,12 @@ func (a *App) initDeps(ctx context.Context) error {
 
 func (a *App) initServiceProvider(_ context.Context) error {
 	a.serviceProvider = newServiceProvider()
+	return nil
+}
+
+func (a *App) initLogger(_ context.Context) error {
+	logger.Init(a.serviceProvider.Config().Env)
+
 	return nil
 }
 
@@ -89,7 +97,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 }
 
 func (a *App) runGRPCServer() error {
-	log.Printf("GRPC server is running on %s\n", a.serviceProvider.Config().GRPC.HostPort())
+	logger.Info("GRPC server is running on " + a.serviceProvider.Config().GRPC.HostPort())
 
 	l, err := net.Listen("tcp", a.serviceProvider.Config().GRPC.HostPort())
 
