@@ -6,12 +6,13 @@ import (
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/domain"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/repository/dao"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
-	chatCollection = "collections"
+	chatCollection = "chats"
 )
 
 type ChatRepository struct {
@@ -38,6 +39,45 @@ func (r *ChatRepository) Create(ctx context.Context, chat *domain.Chat) error {
 	return nil
 }
 
+func (r *ChatRepository) OneByID(ctx context.Context, id string) (*domain.Chat, error) {
+
+	var c *domain.Chat
+
+	objectID, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return c, err
+	}
+
+	ur := r.db.Collection(chatCollection).FindOne(ctx,
+		bson.M{"_id": objectID},
+	)
+
+	err = ur.Decode(&c)
+
+	return c, err
+
+}
+
+func (r *ChatRepository) ContainUser(ctx context.Context, chatID string, userID string) bool {
+	var c *dao.Chat
+	objectID, err := primitive.ObjectIDFromHex(chatID)
+
+	if err != nil {
+		return false
+	}
+
+	res := r.db.
+		Collection(chatCollection).
+		FindOne(ctx,
+			bson.M{"_id": objectID, "users.id": bson.M{"$in": []string{userID}}},
+		)
+
+	err = res.Decode(&c)
+
+	return c != nil && err == nil
+}
+
 func (r *ChatRepository) List(ctx context.Context, userID string) ([]*domain.Chat, error) {
 
 	var res []*dao.Chat
@@ -45,7 +85,7 @@ func (r *ChatRepository) List(ctx context.Context, userID string) ([]*domain.Cha
 	cur, err := r.db.
 		Collection(chatCollection).
 		Find(ctx,
-			bson.M{"users.id": bson.M{"in": userID}},
+			bson.M{"users.id": bson.M{"$in": []string{userID}}},
 			&options.FindOptions{Sort: bson.M{"createdAt": -1}},
 		)
 

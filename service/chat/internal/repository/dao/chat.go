@@ -38,7 +38,7 @@ func ToDaoChat(id string, users []domain.ChatUser, createdAt time.Time) (*Chat, 
 func ToDomainChat(dao Chat) *domain.Chat {
 
 	dc := &domain.Chat{
-		ID:        dao.ID.String(),
+		ID:        dao.ID.Hex(),
 		Users:     ToDomainChatUsers(dao.Users),
 		CreatedAt: dao.CreatedAt,
 	}

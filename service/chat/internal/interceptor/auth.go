@@ -3,16 +3,21 @@ package interceptor
 import (
 	"context"
 
-	client "github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/client/grpc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
-type authInterceptor struct {
-	accessClient client.AccessClient
+type AccessClient interface {
+	Check(ctx context.Context, endpoint string) (bool, error)
 }
 
-func NewAuthInterceptor(accessClient client.AccessClient) *authInterceptor {
+type authInterceptor struct {
+	accessClient AccessClient
+}
+
+func NewAuthInterceptor(accessClient AccessClient) *authInterceptor {
 	return &authInterceptor{
 		accessClient: accessClient,
 	}
@@ -26,10 +31,14 @@ func (i *authInterceptor) Unary() grpc.UnaryServerInterceptor {
 			ctx = metadata.NewOutgoingContext(ctx, md)
 		}
 
-		ok = i.accessClient.Check(ctx, info.FullMethod)
+		ok, err = i.accessClient.Check(ctx, info.FullMethod)
+
+		if err != nil {
+			return nil, err
+		}
 
 		if !ok {
-			return nil, err
+			return nil, status.Errorf(codes.PermissionDenied, "access denied")
 		}
 
 		return handler(ctx, req)

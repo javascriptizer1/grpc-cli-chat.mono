@@ -16,6 +16,7 @@ import (
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/service"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type serviceProvider struct {
@@ -26,6 +27,8 @@ type serviceProvider struct {
 	dbClient *mongo.Database
 
 	chatRepo    *repository.ChatRepository
+	messageRepo *repository.MessageRepository
+
 	chatService *service.ChatService
 
 	authClient   *grpcClient.AuthClient
@@ -52,7 +55,10 @@ func (s *serviceProvider) Config() *config.Config {
 func (s *serviceProvider) GRPCClientConn() *grpc.ClientConn {
 
 	if s.grpcClientConn == nil {
-		conn, err := grpc.NewClient(s.Config().GRPCClient.HostPort(), grpc.EmptyDialOption{})
+		conn, err := grpc.NewClient(
+			s.Config().GRPCClient.HostPort(),
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+		)
 
 		if err != nil {
 			log.Fatalf("failed to connect %s: %s", s.Config().GRPCClient.HostPort(), err.Error())
@@ -78,7 +84,7 @@ func (s *serviceProvider) MongoClient(ctx context.Context) *mongo.Database {
 		})
 
 		if err != nil {
-			log.Fatal("failed to start up db: %v", err)
+			log.Fatalf("failed to start up db: %v", err)
 		}
 
 		s.dbClient = db
@@ -96,13 +102,23 @@ func (s *serviceProvider) ChatRepository(ctx context.Context) *repository.ChatRe
 	return s.chatRepo
 }
 
+func (s *serviceProvider) MessageRepository(ctx context.Context) *repository.MessageRepository {
+
+	if s.messageRepo == nil {
+		s.messageRepo = repository.NewMessageRepository(s.MongoClient(ctx))
+	}
+
+	return s.messageRepo
+}
+
 func (s *serviceProvider) ChatService(ctx context.Context) *service.ChatService {
 
 	if s.chatService == nil {
 
 		s.chatService = service.NewChatService(
-			*s.ChatRepository(ctx),
-			*s.UserClient(ctx),
+			s.ChatRepository(ctx),
+			s.MessageRepository(ctx),
+			s.UserClient(ctx),
 		)
 	}
 
@@ -138,7 +154,7 @@ func (s *serviceProvider) UserClient(_ context.Context) *grpcClient.UserClient {
 
 func (s *serviceProvider) ChatImplementation(ctx context.Context) *delivery.ChatImplementation {
 	if s.chatImplementation == nil {
-		s.chatImplementation = delivery.NewGrpcChatImplementation(s.ChatService(ctx))
+		s.chatImplementation = delivery.NewGrpcChatImplementation(s.ChatService(ctx), s.UserClient(ctx))
 	}
 
 	return s.chatImplementation

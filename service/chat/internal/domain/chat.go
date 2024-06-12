@@ -20,19 +20,9 @@ type Chat struct {
 
 func NewChat(users []ChatUser) *Chat {
 	c := &Chat{
-		ID:        primitive.NewObjectID().String(),
+		ID:        primitive.NewObjectID().Hex(),
 		Users:     users,
 		CreatedAt: time.Now().UTC(),
-	}
-
-	return c
-}
-
-func NewChatWithId(id string, users []ChatUser, createdAt time.Time) *Chat {
-	c := &Chat{
-		ID:        id,
-		Users:     users,
-		CreatedAt: createdAt,
 	}
 
 	return c

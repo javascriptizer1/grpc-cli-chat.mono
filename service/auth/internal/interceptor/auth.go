@@ -69,8 +69,11 @@ func (i *AuthInterceptor) Unary(ctx context.Context, req interface{}, info *grpc
 func methodRequiresAuthentication(fullMethod string) bool {
 	m := extractMethodName(fullMethod)
 	authRequiredMethods := []string{
-		"user_v1.UserService/GetUserInfo",
-		"access_v1.AccessService/Check",
+		"userv1.UserService/GetUserInfo",
+		"accessv1.AccessService/Check",
+		"chatv1.ChatService/SendMessage",
+		"chatv1.ChatService/ConnectChat",
+		"chatv1.ChatService/CreateChat",
 	}
 
 	for _, method := range authRequiredMethods {

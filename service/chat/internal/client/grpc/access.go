@@ -14,8 +14,8 @@ func NewAccessClient(client accessv1.AccessServiceClient) *AccessClient {
 	return &AccessClient{client: client}
 }
 
-func (c *AccessClient) Check(ctx context.Context, endpoint string) bool {
+func (c *AccessClient) Check(ctx context.Context, endpoint string) (bool, error) {
 	_, err := c.client.Check(ctx, &accessv1.CheckRequest{EndpointAddress: endpoint})
 
-	return err != nil
+	return err == nil, err
 }

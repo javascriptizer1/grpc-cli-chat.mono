@@ -1,45 +1,125 @@
 package grpc
 
-import chatv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/chat_v1"
+import (
+	"context"
+	"log"
+	"sync"
+
+	chatv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/chat_v1"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+const maxMessageInChannel = 100
 
 type ChatImplementation struct {
 	chatv1.UnimplementedChatServiceServer
+
 	chatService ChatService
+	userClient  UserClient
+	mu          sync.RWMutex
+	clients     map[string]map[string]chan *chatv1.Message
 }
 
-type ChatService interface{}
-
-func NewGrpcChatImplementation(chatService ChatService) *ChatImplementation {
+func NewGrpcChatImplementation(chatService ChatService, userClient UserClient) *ChatImplementation {
 	return &ChatImplementation{
 		chatService: chatService,
+		userClient:  userClient,
+		clients:     make(map[string]map[string]chan *chatv1.Message),
 	}
 }
 
-// func (impl *AccessImplementation) Check(ctx context.Context, request *accessv1.CheckRequest) (*emptypb.Empty, error) {
+func (impl *ChatImplementation) CreateChat(ctx context.Context, request *chatv1.CreateChatRequest) (*chatv1.CreateChatResponse, error) {
+	id, err := impl.chatService.Create(ctx, request.GetEmails())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	return &chatv1.CreateChatResponse{Id: id}, nil
+}
 
-// 	payload, ok := ctx.Value(interceptor.ContextKeyUserClaims).(jwt.Claims)
+func (impl *ChatImplementation) ConnectChat(request *chatv1.ConnectChatRequest, stream chatv1.ChatService_ConnectChatServer) error {
+	ch := make(chan *chatv1.Message, maxMessageInChannel)
 
-// 	if !ok {
-// 		return nil, status.Errorf(codes.Internal, "missing required token")
-// 	}
+	impl.mu.Lock()
 
-// 	audience, err := payload.GetAudience()
+	if impl.clients[request.GetChatId()] == nil {
+		impl.clients[request.GetChatId()] = make(map[string]chan *chatv1.Message)
+	}
 
-// 	if err != nil {
-// 		return nil, status.Errorf(codes.Internal, "extract role error")
-// 	}
+	impl.clients[request.GetChatId()][request.GetUserId()] = ch
 
-// 	role, err := strconv.Atoi(audience[0])
+	impl.mu.Unlock()
 
-// 	if err != nil {
-// 		return nil, status.Errorf(codes.Internal, "extract role error")
-// 	}
+	log.Printf("User %s connected to chat %s", request.GetUserId(), request.GetChatId())
 
-// 	access := impl.authService.Check(ctx, request.GetEndpointAddress(), domain.UserRole(role))
+	defer func() {
+		impl.mu.Lock()
+		delete(impl.clients[request.GetChatId()], request.GetUserId())
 
-// 	if !access {
-// 		return &emptypb.Empty{}, status.Errorf(codes.PermissionDenied, "access denied")
-// 	}
+		if len(impl.clients[request.GetChatId()]) == 0 {
+			delete(impl.clients, request.GetChatId())
+		}
 
-// 	return &emptypb.Empty{}, nil
-// }
+		impl.mu.Unlock()
+
+		log.Printf("User %s disconnected from chat %s", request.GetUserId(), request.GetChatId())
+		close(ch)
+	}()
+
+	for {
+		select {
+		case msg := <-ch:
+			if err := stream.Send(msg); err != nil {
+				log.Printf("Error sending message to client: %v", err)
+				return err
+			}
+		case <-stream.Context().Done():
+			return nil
+		}
+	}
+}
+
+func (impl *ChatImplementation) SendMessage(ctx context.Context, request *chatv1.SendMessageRequest) (*emptypb.Empty, error) {
+	c, err := impl.chatService.OneByID(ctx, request.GetChatId())
+
+	if c == nil || err != nil {
+		return nil, status.Errorf(codes.NotFound, "chat not found")
+	}
+
+	u, err := impl.userClient.GetUserInfo(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := impl.chatService.CreateMessage(ctx, request.GetText(), request.GetChatId(), *u)
+
+	if err != nil {
+		return nil, err
+	}
+
+	msgProto := &chatv1.Message{
+		Id:        m.ID,
+		Sender:    &chatv1.User{Id: m.Sender.ID, Name: m.Sender.Name},
+		Text:      m.Text,
+		CreatedAt: timestamppb.New(m.CreatedAt),
+	}
+
+	impl.mu.RLock()
+	streams, ok := impl.clients[request.GetChatId()]
+	impl.mu.RUnlock()
+
+	if ok {
+		for _, ch := range streams {
+			select {
+			case ch <- msgProto:
+			default:
+				log.Printf("Warning: message channel for user is full, dropping message")
+			}
+		}
+	}
+
+	return &emptypb.Empty{}, nil
+}
