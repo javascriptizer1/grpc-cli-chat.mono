@@ -1,11 +1,11 @@
 include .env
 
 PROTOC := protoc
-PROTOC_GEN_GO := /usr/local/bin/protoc-gen-go
-PROTOC_GEN_GO_GRPC := /usr/local/bin/protoc-gen-go-grpc
-PROTOC_GEN_GRPC_GATEWAY := /usr/local/bin/protoc-gen-grpc-gateway
-PROTOC_GEN_VALIDATE := /usr/local/bin/protoc-gen-validate
-PROTOC_GEN_OPENAPIV2 := /usr/local/bin/protoc-gen-openapiv2
+PROTOC_GEN_GO := ../../bin/protoc-gen-go
+PROTOC_GEN_GO_GRPC := ../..//bin/protoc-gen-go-grpc
+PROTOC_GEN_GRPC_GATEWAY := ../..//bin/protoc-gen-grpc-gateway
+PROTOC_GEN_VALIDATE := ../..//bin/protoc-gen-validate
+PROTOC_GEN_OPENAPIV2 := ../..//bin/protoc-gen-openapiv2
 
 PROTO_SRC_DIR := api/proto/v1
 PROTO_VENDOR_DIR := ../../vendor.protogen
@@ -62,6 +62,9 @@ generate-api-user:
 		--openapiv2_out=allow_merge=true,merge_file_name=api_user_v1:$(SWAGGER_DST_DIR) \
 		--plugin=protoc-gen-openapiv2=$(PROTOC_GEN_OPENAPIV2) \
 		$(PROTO_SRC_DIR)/user.proto
+
+migrations-generate:
+	goose -dir migrations/postgres create ${name} sql
 
 migrations-up:
 	GOOSE_DBSTRING=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable goose -dir migrations/postgres postgres up
