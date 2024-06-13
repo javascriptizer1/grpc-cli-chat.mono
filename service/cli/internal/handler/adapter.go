@@ -7,6 +7,13 @@ import (
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/client/grpc/dto"
 )
 
+type TokenManager interface {
+	Save() error
+	SetTokens(accessToken, refreshToken string) error
+	AccessToken() string
+	RefreshToken() string
+}
+
 type AuthClient interface {
 	GetAccessToken(ctx context.Context, refreshToken string) (accessToken string, err error)
 	GetRefreshToken(ctx context.Context, oldRefreshToken string) (refreshToken string, err error)

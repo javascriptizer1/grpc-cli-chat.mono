@@ -8,16 +8,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:     "gchat",
-	Short:   "CLI client for chat service",
-	Version: "0.0.1",
-}
-
 func Execute() {
 	ctx := context.Background()
 
 	sp := app.NewServiceProvider()
+
+	var rootCmd = &cobra.Command{
+		Use:     "gchat",
+		Short:   "CLI client for chat service",
+		Version: "0.0.1",
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			sp.TokenManager(ctx).Load()
+		},
+	}
 
 	rootCmd.AddCommand(
 		newRegisterCommand(ctx, sp),

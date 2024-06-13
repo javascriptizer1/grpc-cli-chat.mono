@@ -3,6 +3,8 @@ package config
 import (
 	"log"
 	"net"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -13,6 +15,14 @@ type Config struct {
 	Env      string `env:"ENV" env-default:"local"`
 	GRPCAuth GRPCAuthConfig
 	GRPCChat GRPChatConfig
+}
+
+func (c *Config) ClientConfigPath() string {
+	homeDir, _ := os.UserHomeDir()
+
+	path := filepath.Join(homeDir, "gchat", ".config.json")
+
+	return path
 }
 
 type GRPCAuthConfig struct {
