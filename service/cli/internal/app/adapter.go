@@ -9,7 +9,7 @@ import (
 )
 
 type TokenManager interface {
-	Load()
+	Load() error
 	Save() error
 	SetTokens(accessToken, refreshToken string) error
 	AccessToken() string

@@ -68,8 +68,8 @@ func addRegisterFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("email", "e", "", "Email of the user")
 	cmd.Flags().StringP("password", "p", "", "Password of the user")
 	cmd.Flags().StringP("password-confirm", "c", "", "Password confirmation")
-	cmd.MarkFlagRequired("name")
-	cmd.MarkFlagRequired("email")
-	cmd.MarkFlagRequired("password")
-	cmd.MarkFlagRequired("password-confirm")
+	_ = cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("email")
+	_ = cmd.MarkFlagRequired("password")
+	_ = cmd.MarkFlagRequired("password-confirm")
 }

@@ -39,6 +39,6 @@ func newCreateChatCommand(ctx context.Context, sp *app.ServiceProvider) *cobra.C
 }
 
 func addCreateChatFlags(cmd *cobra.Command) {
-	cmd.Flags().StringArray("emails", []string{}, "Emails of the users in the chat")
-	cmd.MarkFlagRequired("emails")
+	_ = cmd.Flags().StringArray("emails", []string{}, "Emails of the users in the chat")
+	_ = cmd.MarkFlagRequired("emails")
 }

@@ -43,6 +43,6 @@ func newLoginCommand(ctx context.Context, sp *app.ServiceProvider) *cobra.Comman
 func addLoginFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("login", "l", "", "Email of the user")
 	cmd.Flags().StringP("password", "p", "", "Password of the user")
-	cmd.MarkFlagRequired("login")
-	cmd.MarkFlagRequired("password")
+	_ = cmd.MarkFlagRequired("login")
+	_ = cmd.MarkFlagRequired("password")
 }

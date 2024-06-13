@@ -26,18 +26,25 @@ func NewFileTokenManager(filePath string) *FileTokenManager {
 	}
 }
 
-func (tm *FileTokenManager) Load() {
+func (tm *FileTokenManager) Load() error {
+	var e error
 	tm.once.Do(func() {
 		tm.mu.Lock()
 
 		defer tm.mu.Unlock()
 
-		file, _ := os.Open(tm.filePath)
+		file, err := os.Open(tm.filePath)
+		e = err
 
-		defer file.Close()
+		defer func() {
+			_ = file.Close()
+		}()
 
-		json.NewDecoder(file).Decode(&tm.token)
+		err = json.NewDecoder(file).Decode(&tm.token)
+		e = err
 	})
+
+	return e
 }
 
 func (tm *FileTokenManager) Save() error {
@@ -55,7 +62,9 @@ func (tm *FileTokenManager) Save() error {
 		return err
 	}
 
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	err = json.NewEncoder(file).Encode(&tm.token)
 
@@ -99,8 +108,8 @@ func (tm *FileTokenManager) ensureDirExists() error {
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 
-		err := os.MkdirAll(dir, 0755)
-		
+		err := os.MkdirAll(dir, 0750)
+
 		if err != nil {
 			return err
 		}

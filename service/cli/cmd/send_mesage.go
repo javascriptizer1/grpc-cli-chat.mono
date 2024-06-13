@@ -41,6 +41,6 @@ func newSendMessageCommand(ctx context.Context, sp *app.ServiceProvider) *cobra.
 func addSendMessageFlags(cmd *cobra.Command) {
 	cmd.Flags().String("chat-id", "", "ID of the chat")
 	cmd.Flags().String("text", "", "Text of the message")
-	cmd.MarkFlagRequired("chat-id")
-	cmd.MarkFlagRequired("text")
+	_ = cmd.MarkFlagRequired("chat-id")
+	_ = cmd.MarkFlagRequired("text")
 }

@@ -17,8 +17,13 @@ func Execute() {
 		Use:     "gchat",
 		Short:   "CLI client for chat service",
 		Version: "0.0.1",
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			sp.TokenManager(ctx).Load()
+		PersistentPreRun: func(_ *cobra.Command, _ []string) {
+			err := sp.TokenManager(ctx).Load()
+
+			if err != nil {
+				colog.Warn("load config error: %v", err)
+			}
+
 		},
 	}
 

@@ -11,11 +11,11 @@ import (
 )
 
 type Config struct {
-	Env        string `env:"ENV" env-default:"local"`
-	GRPC       GRPCConfig
+	Env      string `env:"ENV" env-default:"local"`
+	GRPC     GRPCConfig
 	GRPCAuth GRPCAuthConfig
-	HTTP       HTTPConfig
-	DB         DBConfig
+	HTTP     HTTPConfig
+	DB       DBConfig
 }
 
 type GRPCConfig struct {

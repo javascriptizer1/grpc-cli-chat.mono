@@ -30,5 +30,5 @@ func newConnectChatCommand(ctx context.Context, sp *app.ServiceProvider) *cobra.
 
 func addConnectChatFlags(cmd *cobra.Command) {
 	cmd.Flags().String("chat-id", "", "ID of the chat")
-	cmd.MarkFlagRequired("chat-id")
+	_ = cmd.MarkFlagRequired("chat-id")
 }
