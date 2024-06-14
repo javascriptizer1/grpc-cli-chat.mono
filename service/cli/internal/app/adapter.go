@@ -4,6 +4,7 @@ import (
 	"context"
 
 	chatv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/chat_v1"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/client/grpc/dto"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/domain"
 )
@@ -27,10 +28,13 @@ type ChatClient interface {
 	ConnectChat(ctx context.Context, chatID string) (cha chatv1.ChatService_ConnectChatClient, err error)
 	CreateChat(ctx context.Context, emails []string) (id string, err error)
 	SendMessage(ctx context.Context, text string, chatID string) error
+	GetChatList(ctx context.Context, p *pagination.Pagination) ([]*domain.ChatListInfo, uint32, error)
+	GetChat(ctx context.Context, id string) (*domain.ChatInfo, error)
 }
 
 type UserClient interface {
 	GetUserInfo(ctx context.Context) (*domain.UserInfo, error)
+	GetUserList(ctx context.Context, options *domain.UserListOption) ([]*domain.UserInfo, uint32, error)
 }
 
 type Handler interface {
@@ -39,4 +43,7 @@ type Handler interface {
 	Login(ctx context.Context, login string, password string) (string, error)
 	Register(ctx context.Context, in dto.RegisterInputDto) (string, error)
 	SendMessage(ctx context.Context, text string, chatID string) error
+	GetChatList(ctx context.Context, p *pagination.Pagination) ([]*domain.ChatListInfo, uint32, error)
+	GetChat(ctx context.Context, chatID string) (*domain.ChatInfo, error)
+	GetUserList(ctx context.Context, options *domain.UserListOption) ([]*domain.UserInfo, uint32, error)
 }

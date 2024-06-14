@@ -134,6 +134,7 @@ func (s *ServiceProvider) HandlerService(ctx context.Context) Handler {
 	if s.handlerService == nil {
 		s.handlerService = handler.New(
 			s.AuthClient(ctx),
+			s.UserClient(ctx),
 			s.ChatClient(ctx),
 			s.TokenManager(ctx),
 		)

@@ -12,9 +12,14 @@ option go_package = "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/u
 
 
 service UserService {
-  rpc GetUserInfo(google.protobuf.Empty) returns (GetUserResponse) {
+  rpc GetUserInfo(google.protobuf.Empty) returns (User) {
     option (google.api.http) = {
       get: "/v1/users/my-info"
+    };
+  }
+    rpc GetUserList(getUserListRequest) returns (getUserListResponse) {
+    option (google.api.http) = {
+      get: "/v1/users"
     };
   }
 }
@@ -24,11 +29,22 @@ enum Role {
   user = 1;
 }
 
-message GetUserResponse {
+message User {
   string id = 1;
   string name = 2;
   string email = 3;
   Role role = 4;
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
+}
+
+message getUserListRequest {
+  uint32 limit = 1;
+  uint32 page = 2;
+  repeated string userIDs = 3;
+}
+
+message getUserListResponse {
+  repeated User users = 1;
+  uint32 total = 2;
 }

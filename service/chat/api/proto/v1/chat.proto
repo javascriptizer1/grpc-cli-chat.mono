@@ -11,13 +11,19 @@ option go_package = "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/c
 service ChatService {
   rpc CreateChat(CreateChatRequest) returns (CreateChatResponse);
   rpc ConnectChat (ConnectChatRequest) returns (stream Message);
+  rpc GetChatList(GetChatListRequest) returns (GetChatListResponse);
+  rpc GetChat(GetChatRequest) returns (GetChatResponse);
   rpc SendMessage (SendMessageRequest) returns (google.protobuf.Empty);
 }
 
 message User {
   string id = 1;
   string name = 2;
-  string email = 3;
+}
+
+message Chat {
+  string id = 1;
+  string name = 2;
 }
 
 message Message {
@@ -28,7 +34,8 @@ message Message {
 }
 
 message CreateChatRequest {
-  repeated string emails = 1;
+  repeated string userIDs = 1;
+  string name = 2;
 }
 
 message CreateChatResponse {
@@ -38,6 +45,27 @@ message CreateChatResponse {
 message ConnectChatRequest {
   string user_id = 1;
   string chat_id = 2;
+}
+
+
+message GetChatListRequest {
+    uint32 limit = 1;
+    uint32 page = 2;
+}
+
+message GetChatListResponse {
+   repeated Chat chats = 1;
+   uint32 total = 2;
+}
+
+message GetChatRequest {
+    string id = 1;
+}
+
+message GetChatResponse {
+  string id = 1;
+  string name = 2;
+  repeated User users = 3;
 }
 
 message SendMessageRequest {

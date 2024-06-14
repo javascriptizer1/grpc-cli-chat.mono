@@ -33,3 +33,28 @@ func (c *UserClient) GetUserInfo(ctx context.Context) (*domain.UserInfo, error) 
 	return ui, nil
 
 }
+
+func (c *UserClient) GetUserList(ctx context.Context, in *domain.UserInfoListFilter) ([]*domain.UserInfo, uint32, error) {
+	res, err := c.client.GetUserList(ctx, &userv1.GetUserListRequest{
+		Limit:   in.Limit,
+		Page:    in.Page,
+		UserIDs: in.UserIDs,
+	})
+
+	if err != nil {
+		return []*domain.UserInfo{}, 0, err
+	}
+
+	users := make([]*domain.UserInfo, len(res.GetUsers()))
+
+	for i, v := range res.GetUsers() {
+		users[i] = domain.NewUserInfo(
+			v.GetId(),
+			v.GetName(),
+			v.GetEmail(),
+			uint16(v.GetRole()),
+		)
+	}
+
+	return users, res.GetTotal(), nil
+}

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/domain"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/repository/dao"
 	"go.mongodb.org/mongo-driver/bson"
@@ -24,7 +25,7 @@ func NewChatRepository(db *mongo.Database) *ChatRepository {
 }
 
 func (r *ChatRepository) Create(ctx context.Context, chat *domain.Chat) error {
-	doc, err := dao.ToDaoChat(chat.ID, chat.Users, chat.CreatedAt)
+	doc, err := dao.ToDaoChat(chat.ID, chat.Name, chat.Users, chat.CreatedAt)
 
 	if err != nil {
 		return err
@@ -41,21 +42,21 @@ func (r *ChatRepository) Create(ctx context.Context, chat *domain.Chat) error {
 
 func (r *ChatRepository) OneByID(ctx context.Context, id string) (*domain.Chat, error) {
 
-	var c *domain.Chat
+	var c *dao.Chat
 
 	objectID, err := primitive.ObjectIDFromHex(id)
 
 	if err != nil {
-		return c, err
+		return nil, err
 	}
 
-	ur := r.db.Collection(chatCollection).FindOne(ctx,
+	res := r.db.Collection(chatCollection).FindOne(ctx,
 		bson.M{"_id": objectID},
 	)
 
-	err = ur.Decode(&c)
+	err = res.Decode(&c)
 
-	return c, err
+	return dao.ToDomainChat(*c), err
 
 }
 
@@ -78,26 +79,36 @@ func (r *ChatRepository) ContainUser(ctx context.Context, chatID string, userID 
 	return c != nil && err == nil
 }
 
-func (r *ChatRepository) List(ctx context.Context, userID string) ([]*domain.Chat, error) {
+func (r *ChatRepository) List(ctx context.Context, userID string, p pagination.Pagination) ([]*domain.Chat, uint32, error) {
 
-	var res []*dao.Chat
+	var res []dao.Chat
+
+	filter := bson.M{"users.id": bson.M{"$in": []string{userID}}}
 
 	cur, err := r.db.
 		Collection(chatCollection).
 		Find(ctx,
-			bson.M{"users.id": bson.M{"$in": []string{userID}}},
-			&options.FindOptions{Sort: bson.M{"createdAt": -1}},
+			filter,
+			options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}),
+			options.Find().SetLimit(int64(p.Limit())),
+			options.Find().SetSkip(int64(p.Offset())),
 		)
 
 	if err != nil {
-		return []*domain.Chat{}, err
+		return []*domain.Chat{}, 0, err
 	}
 
-	err = cur.Decode(&res)
+	total, err := r.db.Collection(chatCollection).CountDocuments(ctx, filter)
 
 	if err != nil {
-		return []*domain.Chat{}, err
+		return []*domain.Chat{}, 0, err
 	}
 
-	return dao.ToDomainChatList(res), nil
+	err = cur.All(ctx, &res)
+
+	if err != nil {
+		return []*domain.Chat{}, 0, err
+	}
+
+	return dao.ToDomainChatList(res), uint32(total), nil
 }

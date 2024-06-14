@@ -12,6 +12,8 @@ type UserRepository interface {
 	Create(_ context.Context, input *domain.User) error
 	OneByEmail(_ context.Context, email string) (u *domain.User, err error)
 	OneByID(_ context.Context, id uuid.UUID) (u *domain.User, err error)
+	List(ctx context.Context, filter *domain.UserListFilter) ([]*domain.User, error)
+	Count(ctx context.Context, filter *domain.UserListFilter) (total uint32, err error)
 }
 
 type AuthService interface {
@@ -24,4 +26,5 @@ type AuthService interface {
 
 type UserService interface {
 	OneByID(ctx context.Context, id uuid.UUID) (*domain.User, error)
+	List(ctx context.Context, filter *domain.UserListFilter) ([]*domain.User, uint32, error)
 }

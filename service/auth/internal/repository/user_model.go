@@ -32,3 +32,13 @@ func (u *User) ToDomain() *domain.User {
 
 	return user
 }
+
+func ListToDomain(users []*User) []*domain.User {
+	du := make([]*domain.User, len(users))
+
+	for i, v := range users {
+		du[i] = v.ToDomain()
+	}
+
+	return du
+}

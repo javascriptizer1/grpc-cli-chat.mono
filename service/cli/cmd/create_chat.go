@@ -13,17 +13,17 @@ func newCreateChatCommand(ctx context.Context, sp *app.ServiceProvider) *cobra.C
 		Use:   "create-chat",
 		Short: "Create a new chat",
 		Run: func(cmd *cobra.Command, _ []string) {
-			emails, err := cmd.Flags().GetStringArray("emails")
+			userIDs, err := cmd.Flags().GetStringArray("user-ids")
 
 			if err != nil {
 				colog.Fatal("failed to get emails: %s", err.Error())
 			}
 
-			if len(emails) == 0 {
-				colog.Fatal("emails can not be empty: %v", err)
+			if len(userIDs) == 0 {
+				colog.Fatal("id of users can not be empty: %v", err)
 			}
 
-			id, err := sp.HandlerService(ctx).CreateChat(ctx, emails)
+			id, err := sp.HandlerService(ctx).CreateChat(ctx, userIDs)
 
 			if err != nil {
 				colog.Error("could not create chat: %v", err)
@@ -39,6 +39,6 @@ func newCreateChatCommand(ctx context.Context, sp *app.ServiceProvider) *cobra.C
 }
 
 func addCreateChatFlags(cmd *cobra.Command) {
-	_ = cmd.Flags().StringArray("emails", []string{}, "Emails of the users in the chat")
-	_ = cmd.MarkFlagRequired("emails")
+	_ = cmd.Flags().StringArray("user-ids", []string{}, "ID of the users")
+	_ = cmd.MarkFlagRequired("user-ids")
 }

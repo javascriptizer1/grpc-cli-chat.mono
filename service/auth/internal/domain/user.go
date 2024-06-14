@@ -6,7 +6,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/bcrypt"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
 )
+
+type UserListFilter struct {
+	pagination.Pagination
+	UserIDs []uuid.UUID
+}
 
 type UserRole uint16
 

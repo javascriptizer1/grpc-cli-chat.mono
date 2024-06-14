@@ -6,6 +6,8 @@ import (
 	"sync"
 
 	chatv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/chat_v1"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/domain"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -34,10 +36,12 @@ func NewGrpcChatImplementation(chatService ChatService, userClient UserClient) *
 }
 
 func (impl *ChatImplementation) CreateChat(ctx context.Context, request *chatv1.CreateChatRequest) (*chatv1.CreateChatResponse, error) {
-	id, err := impl.chatService.Create(ctx, request.GetEmails())
+	id, err := impl.chatService.Create(ctx, request.GetName(), request.GetUserIDs())
+
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+		return nil, err
 	}
+
 	return &chatv1.CreateChatResponse{Id: id}, nil
 }
 
@@ -124,4 +128,73 @@ func (impl *ChatImplementation) SendMessage(ctx context.Context, request *chatv1
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+func (impl *ChatImplementation) GetChatList(ctx context.Context, request *chatv1.GetChatListRequest) (*chatv1.GetChatListResponse, error) {
+	u, err := impl.userClient.GetUserInfo(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	chats, total, err := impl.chatService.List(ctx, u.ID, *pagination.New(request.Limit, request.Page))
+
+	if err != nil {
+		return nil, err
+	}
+
+	var protoChats = make([]*chatv1.Chat, len(chats))
+
+	for i, v := range chats {
+		c := &chatv1.Chat{Id: v.ID, Name: v.Name}
+		protoChats[i] = c
+	}
+
+	return &chatv1.GetChatListResponse{
+			Chats: protoChats,
+			Total: uint32(total),
+		},
+		nil
+}
+func (impl *ChatImplementation) GetChat(ctx context.Context, request *chatv1.GetChatRequest) (*chatv1.GetChatResponse, error) {
+	chat, err := impl.chatService.OneByID(ctx, request.GetId())
+
+	if err != nil {
+		return nil, err
+	}
+
+	var userIDs []string
+	var chatUsers []*chatv1.User
+
+	for _, v := range chat.Users {
+		userIDs = append(userIDs, v.ID)
+	}
+
+	if len(userIDs) != 0 {
+		userInfos, _, err := impl.userClient.GetUserList(
+			ctx,
+			&domain.UserInfoListFilter{
+				Limit:   uint32(len(chat.Users)),
+				Page:    1,
+				UserIDs: userIDs,
+			},
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range userInfos {
+			chatUsers = append(chatUsers, &chatv1.User{
+				Id:   v.ID,
+				Name: v.Name,
+			})
+		}
+	}
+
+	return &chatv1.GetChatResponse{
+		Id:    chat.ID,
+		Name:  chat.Name,
+		Users: chatUsers,
+	}, nil
 }

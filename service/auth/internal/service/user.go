@@ -18,3 +18,20 @@ func NewUserService(userRepo UserRepository) *UserService {
 func (s *UserService) OneByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	return s.userRepo.OneByID(ctx, id)
 }
+
+func (s *UserService) List(ctx context.Context, filter *domain.UserListFilter) ([]*domain.User, uint32, error) {
+	users, err := s.userRepo.List(ctx, filter)
+
+	if err != nil {
+		return []*domain.User{}, 0, err
+	}
+
+	total, err := s.userRepo.Count(ctx, filter)
+
+	if err != nil {
+		return []*domain.User{}, 0, err
+	}
+
+	return users, total, nil
+
+}

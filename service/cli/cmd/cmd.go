@@ -21,7 +21,7 @@ func Execute() {
 			err := sp.TokenManager(ctx).Load()
 
 			if err != nil {
-				colog.Warn("load config error: %v", err)
+				colog.Fatal("load config error: %v", err)
 			}
 
 		},
@@ -30,11 +30,12 @@ func Execute() {
 	rootCmd.AddCommand(
 		newRegisterCommand(ctx, sp),
 		newLoginCommand(ctx, sp),
+		newGetUserListCommand(ctx, sp),
 		newCreateChatCommand(ctx, sp),
 		newConnectChatCommand(ctx, sp),
 		newSendMessageCommand(ctx, sp),
-		// newListChatsCommand(ctx, sp),
-		// newListUsersCommand(ctx, sp),
+		newGetChatListCommand(ctx, sp),
+		newGetChatCommand(ctx, sp),
 	)
 
 	if err := rootCmd.Execute(); err != nil {

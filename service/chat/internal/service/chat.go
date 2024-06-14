@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/domain"
 )
 
@@ -21,9 +22,14 @@ func NewChatService(chatRepo ChatRepository, messageRepo MessageRepository, user
 	}
 }
 
-func (s *ChatService) Create(ctx context.Context, userIDs []string) (string, error) {
-	users := make([]domain.ChatUser, 5)
-	c := domain.NewChat(users)
+func (s *ChatService) Create(ctx context.Context, name string, userIDs []string) (string, error) {
+	users := make([]domain.ChatUser, len(userIDs))
+
+	for i, id := range userIDs {
+		users[i] = *domain.NewChatUser(id)
+	}
+
+	c := domain.NewChat(name, users)
 
 	err := s.chatRepo.Create(ctx, c)
 
@@ -34,8 +40,8 @@ func (s *ChatService) OneByID(ctx context.Context, id string) (*domain.Chat, err
 	return s.chatRepo.OneByID(ctx, id)
 }
 
-func (s *ChatService) List(ctx context.Context, userID string) ([]*domain.Chat, error) {
-	return s.chatRepo.List(ctx, userID)
+func (s *ChatService) List(ctx context.Context, userID string, p pagination.Pagination) ([]*domain.Chat, uint32, error) {
+	return s.chatRepo.List(ctx, userID, p)
 }
 
 func (s *ChatService) CreateMessage(ctx context.Context, text string, chatID string, userInfo domain.UserInfo) (*domain.Message, error) {

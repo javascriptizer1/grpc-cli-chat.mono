@@ -1,5 +1,11 @@
 package domain
 
+type UserInfoListFilter struct {
+	Limit   uint32
+	Page    uint32
+	UserIDs []string
+}
+
 type UserInfo struct {
 	ID    string
 	Name  string

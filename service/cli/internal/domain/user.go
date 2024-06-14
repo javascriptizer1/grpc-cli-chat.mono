@@ -1,5 +1,12 @@
 package domain
 
+import "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
+
+type UserListOption struct {
+	pagination.Pagination
+	UserIDs []string
+}
+
 type UserInfo struct {
 	ID    string
 	Name  string

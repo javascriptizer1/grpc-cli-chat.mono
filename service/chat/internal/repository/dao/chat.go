@@ -9,17 +9,17 @@ import (
 
 type ChatUser struct {
 	ID          string    `bson:"id"`
-	Name        string    `bson:"name"`
 	ConnectedAt time.Time `bson:"connectedAt"`
 }
 
 type Chat struct {
 	ID        primitive.ObjectID `bson:"_id"`
+	Name      string             `bson:"name"`
 	Users     []ChatUser         `bson:"users"`
 	CreatedAt time.Time          `bson:"createdAt"`
 }
 
-func ToDaoChat(id string, users []domain.ChatUser, createdAt time.Time) (*Chat, error) {
+func ToDaoChat(id string, name string, users []domain.ChatUser, createdAt time.Time) (*Chat, error) {
 	objectID, err := primitive.ObjectIDFromHex(id)
 
 	if err != nil {
@@ -28,6 +28,7 @@ func ToDaoChat(id string, users []domain.ChatUser, createdAt time.Time) (*Chat, 
 
 	dc := &Chat{
 		ID:        objectID,
+		Name:      name,
 		Users:     ToDaoChatUserList(users),
 		CreatedAt: createdAt,
 	}
@@ -39,6 +40,7 @@ func ToDomainChat(dao Chat) *domain.Chat {
 
 	dc := &domain.Chat{
 		ID:        dao.ID.Hex(),
+		Name:      dao.Name,
 		Users:     ToDomainChatUsers(dao.Users),
 		CreatedAt: dao.CreatedAt,
 	}
@@ -46,11 +48,11 @@ func ToDomainChat(dao Chat) *domain.Chat {
 	return dc
 }
 
-func ToDomainChatList(dao []*Chat) []*domain.Chat {
+func ToDomainChatList(dao []Chat) []*domain.Chat {
 	var result = make([]*domain.Chat, len(dao))
 
 	for i, v := range dao {
-		cu := ToDomainChat(*v)
+		cu := ToDomainChat(v)
 
 		result[i] = cu
 	}
@@ -61,7 +63,6 @@ func ToDomainChatList(dao []*Chat) []*domain.Chat {
 func ToDaoChatUser(domain *domain.ChatUser) *ChatUser {
 	dcu := &ChatUser{
 		ID:          domain.ID,
-		Name:        domain.Name,
 		ConnectedAt: domain.ConnectedAt,
 	}
 
@@ -83,7 +84,6 @@ func ToDaoChatUserList(domain []domain.ChatUser) []ChatUser {
 func ToDomainChatUser(dao *ChatUser) *domain.ChatUser {
 	dcu := &domain.ChatUser{
 		ID:          dao.ID,
-		Name:        dao.Name,
 		ConnectedAt: dao.ConnectedAt,
 	}
 

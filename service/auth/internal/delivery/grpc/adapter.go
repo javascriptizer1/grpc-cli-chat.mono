@@ -18,4 +18,5 @@ type AuthService interface {
 
 type UserService interface {
 	OneByID(context.Context, uuid.UUID) (*domain.User, error)
+	List(ctx context.Context, filter *domain.UserListFilter) ([]*domain.User, uint32, error)
 }

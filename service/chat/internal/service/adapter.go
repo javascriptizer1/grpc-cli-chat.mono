@@ -3,12 +3,13 @@ package service
 import (
 	"context"
 
+	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/domain"
 )
 
 type ChatRepository interface {
 	Create(ctx context.Context, chat *domain.Chat) error
-	List(ctx context.Context, userID string) ([]*domain.Chat, error)
+	List(ctx context.Context, userID string, p pagination.Pagination) ([]*domain.Chat, uint32, error)
 	ContainUser(ctx context.Context, chatID string, userID string) bool
 	OneByID(ctx context.Context, id string) (*domain.Chat, error)
 }
