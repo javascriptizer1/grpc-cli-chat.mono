@@ -14,6 +14,7 @@ env:
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
   NAMESPACE: ${{ secrets.NAMESPACE }}
   IMAGE: andreq21/auth:${{ github.sha }}
+  ENV: ${{ vars.ENV }}
   POSTGRES_HOST: ${{ vars.POSTGRES_HOST }}
   POSTGRES_PORT: ${{ vars.POSTGRES_PORT }}
   POSTGRES_USER: ${{ vars.POSTGRES_USER }}
@@ -89,6 +90,7 @@ jobs:
 
       - name: Create .env file
         run: |
+          echo "ENV=$ENV" >> .env
           echo "POSTGRES_HOST=$POSTGRES_HOST" >> .env
           echo "POSTGRES_PORT=$POSTGRES_PORT" >> .env
           echo "POSTGRES_USER=$POSTGRES_USER" >> .env
