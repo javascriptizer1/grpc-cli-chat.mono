@@ -57,7 +57,7 @@ func MustLoad() *Config {
 	err := godotenv.Load()
 
 	if err != nil {
-		logger.Fatal("Error loading .env file")
+		logger.Warn("Error loading .env file")
 	}
 
 	var cfg Config
