@@ -10,7 +10,6 @@ import (
 
 var globalLogger *zap.Logger
 
-
 func Init(env string) {
 	atomic := zap.NewAtomicLevel()
 
