@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"net"
 	"strconv"
 	"time"
@@ -56,7 +57,7 @@ func MustLoad() *Config {
 	err := godotenv.Load()
 
 	if err != nil {
-		// logger.Warn("Error loading .env file")
+		log.Printf("Error loading .env file: %v", err)
 	}
 
 	var cfg Config
