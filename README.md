@@ -79,7 +79,7 @@ go run main.go login --login "john@example.com" --password "password"
 - **Create a Chat**
 
 ```bash
-go run main.go create-chat --emails="lolo@mail.ru"
+go run main.go create-chat --user-ids="<uuid>"
 ```
 
 - **List of Chats**
