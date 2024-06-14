@@ -11,7 +11,7 @@ on:
 env:
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-  KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
   NAMESPACE: ${{ secrets.NAMESPACE }}
   IMAGE: andreq21/auth:${{ github.sha }}
 
@@ -72,8 +72,7 @@ jobs:
       - name: Set up kubectl
         run: |
           mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
-          cat $HOME/.kube/config
+          echo "$KUBE_CONFIG" | base64 --decode > $HOME/.kube/config
 
       - name: Substitute environment variables in configmap
         run: |
