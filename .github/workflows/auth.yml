@@ -6,10 +6,16 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy the service'
+        required: true
+        default: 'false'
 
 jobs:
   lint-build-deploy:
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
 
     env:
       DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -29,8 +35,8 @@ jobs:
 
       - name: Run linters
         run: |
-          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
-          golangci-lint run ./service/auth/...
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.59.1
+          golangci-lint run ./service/auth/... --config ./golangci.pipeline.yaml
 
       - name: Build Docker image
         run: |
