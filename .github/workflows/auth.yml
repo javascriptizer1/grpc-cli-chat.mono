@@ -72,7 +72,8 @@ jobs:
       - name: Set up kubectl
         run: |
           mkdir -p $HOME/.kube
-          echo "$KUBECONFIG" | base64 --decode > $HOME/.kube/config
+          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
+          cat $HOME/.kube/config
 
       - name: Substitute environment variables in configmap
         run: |
