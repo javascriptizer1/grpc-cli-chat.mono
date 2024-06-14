@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	"os"
 
 	"go.uber.org/zap"
@@ -33,9 +32,6 @@ func Init(env string) {
 		zapcore.Lock(os.Stdout),
 		atomic,
 	))
-
-	fmt.Println("globalLogger")
-	fmt.Println(globalLogger)
 }
 
 func Debug(msg string, fields ...zap.Field) {

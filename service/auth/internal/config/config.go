@@ -1,13 +1,14 @@
 package config
 
 import (
-	"log"
 	"net"
 	"strconv"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/logger"
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -57,7 +58,7 @@ func MustLoad() *Config {
 	err := godotenv.Load()
 
 	if err != nil {
-		log.Printf("Error loading .env file: %v", err)
+		logger.Warn("No loading .env file", zap.Error(err))
 	}
 
 	var cfg Config
