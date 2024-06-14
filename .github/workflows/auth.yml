@@ -32,7 +32,7 @@ jobs:
       - name: Run linters
         run: |
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.59.1
-          golangci-lint run ./service/auth/... --config ./golangci.pipeline.yaml
+          golangci-lint run ./service/auth/... --config ./.golangci.pipeline.yaml
 
       - name: Build Docker image
         run: |
