@@ -18,6 +18,7 @@ env:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    environment: auth-production
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
 
     steps:
@@ -36,6 +37,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    environment: auth-production
     needs: lint
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
 
@@ -57,6 +59,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    environment: auth-production
     needs: build
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
 
