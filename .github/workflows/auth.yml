@@ -40,6 +40,9 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Build Docker image
         run: |
           docker build -t $IMAGE -f ./service/auth/Dockerfile .
@@ -58,6 +61,9 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Install dependencies
         run: |
           sudo apt-get update
