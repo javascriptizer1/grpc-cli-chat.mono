@@ -108,7 +108,7 @@ func (r *UserRepository) OneByEmail(_ context.Context, email string) (u *domain.
 	return rawUser.ToDomain(), nil
 }
 
-func (r *UserRepository) List(ctx context.Context, filter *domain.UserListFilter) (u []*domain.User, err error) {
+func (r *UserRepository) List(_ context.Context, filter *domain.UserListFilter) (u []*domain.User, err error) {
 	var rawUsers []*User
 
 	builder := r.builder.
@@ -146,7 +146,7 @@ func (r *UserRepository) List(ctx context.Context, filter *domain.UserListFilter
 	return ListToDomain(rawUsers), nil
 }
 
-func (r *UserRepository) Count(ctx context.Context, filter *domain.UserListFilter) (total uint32, err error) {
+func (r *UserRepository) Count(_ context.Context, filter *domain.UserListFilter) (total uint32, err error) {
 
 	builder := r.builder.Select("COUNT(id)").From(users)
 
