@@ -1,0 +1,5 @@
+app:
+  replicaCount: 1
+  port: 50051
+  image:
+    tag: ""

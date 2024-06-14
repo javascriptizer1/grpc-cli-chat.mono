@@ -8,16 +8,16 @@ WORKDIR /opt
 
 COPY go.mod go.sum ./
 COPY pkg ./pkg
-COPY service/auth ./service/auth
+COPY service/chat ./service/chat
 
 RUN go mod download
 
-RUN go build -o app/main service/auth/cmd/app/main.go
+RUN go build -o app/main service/chat/cmd/app/main.go
 
 
 FROM scratch as runtime
 
-WORKDIR /opt/service/auth
+WORKDIR /opt/service/chat
 
 COPY --from=builder /opt/app/main /main
 ENTRYPOINT ["/main"]

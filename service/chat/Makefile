@@ -1,11 +1,11 @@
 include .env
 
 PROTOC := protoc
-PROTOC_GEN_GO := ../..//bin/protoc-gen-go
-PROTOC_GEN_GO_GRPC := ../..//bin/protoc-gen-go-grpc
-PROTOC_GEN_GRPC_GATEWAY := ../..//bin/protoc-gen-grpc-gateway
-PROTOC_GEN_VALIDATE := ../..//bin/protoc-gen-validate
-PROTOC_GEN_OPENAPIV2 := ../..//bin/protoc-gen-openapiv2
+PROTOC_GEN_GO := ../../bin/protoc-gen-go
+PROTOC_GEN_GO_GRPC := ../../bin/protoc-gen-go-grpc
+PROTOC_GEN_GRPC_GATEWAY := ../../bin/protoc-gen-grpc-gateway
+PROTOC_GEN_VALIDATE := ../../bin/protoc-gen-validate
+PROTOC_GEN_OPENAPIV2 := ../../bin/protoc-gen-openapiv2
 
 PROTO_SRC_DIR := api/proto/v1
 PROTO_VENDOR_DIR := ../../vendor.protogen

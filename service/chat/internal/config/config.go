@@ -14,7 +14,6 @@ type Config struct {
 	Env      string `env:"ENV" env-default:"local"`
 	GRPC     GRPCConfig
 	GRPCAuth GRPCAuthConfig
-	HTTP     HTTPConfig
 	DB       DBConfig
 }
 
@@ -34,16 +33,6 @@ type GRPCAuthConfig struct {
 }
 
 func (c *GRPCAuthConfig) HostPort() string {
-	return net.JoinHostPort(c.Host, strconv.Itoa(c.Port))
-}
-
-type HTTPConfig struct {
-	Host    string        `env:"HTTP_SERVER_HOST" env-default:"localhost"`
-	Port    int           `env:"HTTP_SERVER_PORT" env-default:"8081"`
-	Timeout time.Duration `env:"HTTP_SERVER_TIMEOUT"`
-}
-
-func (c *HTTPConfig) HostPort() string {
 	return net.JoinHostPort(c.Host, strconv.Itoa(c.Port))
 }
 

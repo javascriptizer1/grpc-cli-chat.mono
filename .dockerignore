@@ -1,0 +1,16 @@
+.github
+.vscode
+deploy
+vendor.protogen
+bin
+/bin/
+docker-compose.yaml
+Dockerfile
+Makefile
+.golangci.pipeline.yaml
+.gitignore
+.env
+.env.*
+README.md
+
+*_test.go
