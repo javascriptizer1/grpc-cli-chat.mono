@@ -1,0 +1,61 @@
+name: Deploy Auth Service
+
+on:
+  workflow_dispatch:
+
+jobs:
+  lint-build-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+      NAMESPACE: ${{ secrets.NAMESPACE }}
+      IMAGE: andreq21/auth:${{ github.sha }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22.4
+
+      - name: Run linters
+        run: |
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
+          golangci-lint run ./service/auth/...
+
+      - name: Build Docker image
+        run: |
+          docker build -t $IMAGE -f ./service/auth/Dockerfile .
+
+      - name: Login to Docker Hub
+        run: |
+          echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push $IMAGE
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
+
+      - name: Set up kubectl
+        run: |
+          mkdir -p $HOME/.kube
+          echo "$KUBECONFIG" > $HOME/.kube/config
+
+      - name: Substitute environment variables in configmap
+        run: |
+          export $(grep -v '^#' $ENV | xargs)
+          envsubst < deploy/helm/auth/templates/configmap.yaml > ./configmap.yaml
+          mv ./configmap.yaml deploy/helm/auth/templates/configmap.yaml
+
+      - name: Deploy to Kubernetes
+        run: |
+          helm upgrade --install auth ./deploy/helm/auth --namespace=$NAMESPACE --set app.image.tag=$IMAGE

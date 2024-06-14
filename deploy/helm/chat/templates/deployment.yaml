@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-backend
+spec:
+  replicas: {{ .Values.app.replicaCount }}
+  selector:
+    matchLabels:
+      app: chat-backend
+  template:
+    metadata:
+      labels:
+        app: chat-backend
+    spec:
+      imagePullSecrets:
+        - name: j11er-docker-registry
+      containers:
+        - name: chat-backend
+          image: {{ .Values.app.image.tag }}
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: chat-backend-env-config
+          ports:
+            - name: grpc
+              containerPort: {{ .Values.app.port }}
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 400m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
