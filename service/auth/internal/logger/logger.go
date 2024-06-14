@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"os"
 
 	"go.uber.org/zap"
@@ -8,6 +9,7 @@ import (
 )
 
 var globalLogger *zap.Logger
+
 
 func Init(env string) {
 	atomic := zap.NewAtomicLevel()
@@ -32,6 +34,9 @@ func Init(env string) {
 		zapcore.Lock(os.Stdout),
 		atomic,
 	))
+
+	fmt.Println("globalLogger")
+	fmt.Println(globalLogger)
 }
 
 func Debug(msg string, fields ...zap.Field) {

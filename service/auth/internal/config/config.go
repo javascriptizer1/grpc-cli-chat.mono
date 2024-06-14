@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/logger"
 	"github.com/joho/godotenv"
 )
 
@@ -57,7 +56,7 @@ func MustLoad() *Config {
 	err := godotenv.Load()
 
 	if err != nil {
-		logger.Warn("Error loading .env file")
+		// logger.Warn("Error loading .env file")
 	}
 
 	var cfg Config
