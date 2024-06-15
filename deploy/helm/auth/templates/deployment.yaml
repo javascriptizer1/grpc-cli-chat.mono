@@ -24,7 +24,7 @@ spec:
           command: ["/bin/sh"]
           args: ["/opt/service/auth/run-migrations.sh"]
           volumeMounts:
-            - name: bash-script-clickhouse
+            - name: bash-script-migrations
               mountPath: /opt/service/auth/
               subPath: run-migrations.sh
       containers:
