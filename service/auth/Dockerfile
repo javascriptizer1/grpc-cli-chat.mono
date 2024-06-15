@@ -1,8 +1,8 @@
 FROM golang:1.22.4-alpine as builder
 
-ENV CGO_ENABLED=1 GOOS=linux
-
-RUN apk update --no-cache && apk add --no-cache build-base
+ENV CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
 
 WORKDIR /opt
 
