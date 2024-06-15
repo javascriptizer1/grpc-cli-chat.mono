@@ -17,6 +17,10 @@ type Config struct {
 }
 
 func (c *Config) toURL() string {
+	if c.Port == "" {
+		return fmt.Sprintf("mongodb+srv://%s:%s@%s", c.User, c.Password, c.Host)
+	}
+
 	return fmt.Sprintf("mongodb://%s:%s@%s:%s", c.User, c.Password, c.Host, c.Port)
 }
 
