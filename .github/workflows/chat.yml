@@ -72,6 +72,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gettext
 
+      - name: Create .env file
+        run: |
+          echo "ENV=${{ vars.ENV }}" >> .env
+          echo "MONGO_HOST=${{ vars.MONGO_HOST }}" >> .env
+          echo "MONGO_PORT=${{ vars.MONGO_PORT }}" >> .env
+          echo "MONGO_USER=${{ vars.MONGO_USER }}" >> .env
+          echo "MONGO_PASSWORD=${{ vars.MONGO_PASSWORD }}" >> .env
+          echo "MONGO_DB=${{ vars.MONGO_DB }}" >> .env
+          echo "GRPC_SERVER_HOST=${{ vars.GRPC_SERVER_HOST }}" >> .env
+          echo "GRPC_SERVER_PORT=${{ vars.GRPC_SERVER_PORT }}" >> .env
+          echo "GRPC_SERVER_TIMEOUT=${{ vars.GRPC_SERVER_TIMEOUT }}" >> .env
+          echo "GRPC_AUTH_HOST=${{ vars.GRPC_AUTH_HOST }}" >> .env
+          echo "GRPC_AUTH_PORT=${{ vars.GRPC_AUTH_PORT }}" >> .env
+
       - name: Set up kubectl
         run: |
           mkdir -p $HOME/.kube
@@ -79,7 +93,7 @@ jobs:
 
       - name: Substitute environment variables in configmap
         run: |
-          export $(grep -v '^#' $ENV | xargs)
+          export $(cat .env | xargs)
           envsubst < deploy/helm/chat/templates/configmap.yaml > ./configmap.yaml
           mv ./configmap.yaml deploy/helm/chat/templates/configmap.yaml
 
