@@ -15,7 +15,7 @@ RUN go build -o app/main service/auth/cmd/app/main.go
 
 
 # runtime stage
-FROM scratch as runtime
+FROM alpine:3.20 as runtime
 
 WORKDIR /opt/service/auth
 
