@@ -10,4 +10,5 @@ WORKDIR /opt
 COPY service/auth/migrations ./migrations
 
 ENV GOOSE_DBSTRING=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
-RUN /bin/goose -dir ./migrations/postgres postgres up
+
+ENTRYPOINT ["/bin/sh", "-c", "/bin/goose -dir ./migrations/postgres postgres up"]
