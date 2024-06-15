@@ -93,6 +93,7 @@ jobs:
           echo "JWT_ACCESS_DURATION=${{ vars.JWT_ACCESS_DURATION }}" >> .env
           echo "JWT_REFRESH_SECRET=${{ vars.JWT_REFRESH_SECRET }}" >> .env
           echo "JWT_REFRESH_DURATION=${{ vars.JWT_REFRESH_DURATION }}" >> .env
+          echo "POSTGRES_URL=${{ vars.POSTGRES_URL }}" >> .env
 
       - name: Set up kubectl
         run: |
