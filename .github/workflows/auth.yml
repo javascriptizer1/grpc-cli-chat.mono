@@ -14,6 +14,7 @@ env:
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
   NAMESPACE: ${{ secrets.NAMESPACE }}
   IMAGE: andreq21/auth:${{ github.sha }}
+  IMAGE_MIGRATOR: andreq21/auth-migrator:${{ github.sha }}
 
 jobs:
   lint:
@@ -48,6 +49,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t $IMAGE -f ./service/auth/Dockerfile .
+          docker build -t $IMAGE_MIGRATOR -f ./service/auth/migration.Dockerfile .
 
       - name: Login to Docker Hub
         run: |
@@ -56,6 +58,7 @@ jobs:
       - name: Push Docker image to Docker Hub
         run: |
           docker push $IMAGE
+          docker push $IMAGE_MIGRATOR
 
   deploy:
     runs-on: ubuntu-latest
@@ -104,4 +107,4 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-          helm upgrade --install auth ./deploy/helm/auth --namespace=$NAMESPACE --set app.image.tag=$IMAGE
+          helm upgrade --install auth ./deploy/helm/auth --namespace=$NAMESPACE --set app.image.tag=$IMAGE --set migrator.image.tag=$IMAGE_MIGRATOR

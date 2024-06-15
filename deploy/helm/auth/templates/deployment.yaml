@@ -15,18 +15,12 @@ spec:
       imagePullSecrets:
         - name: j11er-docker-registry
       initContainers:
-        - name: migrations
-          image: {{ .Values.app.image.tag }}
+        - name: migrator
+          image: {{ .Values.migrator.image.tag }}
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:
                 name: auth-backend-env-config
-          command: ["/bin/sh"]
-          args: ["/opt/scripts/run-migrations.sh"]
-          volumeMounts:
-            - name: bash-script-migrations
-              mountPath: /opt/scripts/
-              subPath: run-migrations.sh
       containers:
         - name: auth-backend
           image: {{ .Values.app.image.tag }}
@@ -45,7 +39,3 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
-      volumes:
-          - name: bash-script-migrations
-            configMap:
-              name: bash-script-migrations

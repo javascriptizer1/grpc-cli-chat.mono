@@ -3,3 +3,7 @@ app:
   port: 50051
   image:
     tag: ""
+
+migrator:
+  image:
+    tag: ""
