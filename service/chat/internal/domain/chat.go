@@ -14,26 +14,22 @@ type ChatUser struct {
 type Chat struct {
 	ID        string
 	Name      string
-	Users     []ChatUser
+	Users     []*ChatUser
 	CreatedAt time.Time
 }
 
-func NewChat(name string, users []ChatUser) *Chat {
-	c := &Chat{
+func NewChat(name string, users []*ChatUser) *Chat {
+	return &Chat{
 		ID:        primitive.NewObjectID().Hex(),
 		Name:      name,
 		Users:     users,
 		CreatedAt: time.Now().UTC(),
 	}
-
-	return c
 }
 
 func NewChatUser(id string) *ChatUser {
-	cu := &ChatUser{
+	return &ChatUser{
 		ID:          id,
 		ConnectedAt: time.Now().UTC(),
 	}
-
-	return cu
 }

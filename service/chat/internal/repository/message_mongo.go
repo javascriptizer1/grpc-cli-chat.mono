@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/converter"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/domain"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/repository/dao"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,7 +24,7 @@ func NewMessageRepository(db *mongo.Database) *MessageRepository {
 }
 
 func (r *MessageRepository) Create(ctx context.Context, message *domain.Message) error {
-	doc, err := dao.ToDaoMessage(*message)
+	doc, err := converter.ToDaoMessage(message)
 
 	if err != nil {
 		return err
@@ -31,41 +32,35 @@ func (r *MessageRepository) Create(ctx context.Context, message *domain.Message)
 
 	_, err = r.db.Collection(messageCollection).InsertOne(ctx, doc)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (r *MessageRepository) List(ctx context.Context, userID string) ([]*domain.Message, int, error) {
+	filter := bson.M{"users.id": userID}
 
-	var res []*dao.Message
+	options := options.Find().SetSort(bson.M{"createdAt": -1})
 
-	filter := bson.M{"users.id": bson.M{"in": userID}}
-
-	cur, err := r.db.
-		Collection(messageCollection).
-		Find(ctx,
-			filter,
-			&options.FindOptions{Sort: bson.M{"createdAt": -1}},
-		)
+	cur, err := r.db.Collection(messageCollection).Find(ctx, filter, options)
 
 	if err != nil {
-		return []*domain.Message{}, 0, err
+		return nil, 0, err
+	}
+
+	defer func() {
+		err = cur.Close(ctx)
+	}()
+
+	var messages []*dao.Message
+
+	if err = cur.All(ctx, &messages); err != nil {
+		return nil, 0, err
 	}
 
 	total, err := r.db.Collection(messageCollection).CountDocuments(ctx, filter)
 
 	if err != nil {
-		return []*domain.Message{}, 0, err
+		return nil, 0, err
 	}
 
-	err = cur.Decode(&res)
-
-	if err != nil {
-		return []*domain.Message{}, 0, err
-	}
-
-	return dao.ToDomainMessageList(res), int(total), nil
+	return converter.ToDomainMessageList(messages), int(total), nil
 }

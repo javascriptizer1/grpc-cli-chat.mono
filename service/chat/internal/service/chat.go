@@ -23,10 +23,10 @@ func NewChatService(chatRepo ChatRepository, messageRepo MessageRepository, user
 }
 
 func (s *ChatService) Create(ctx context.Context, name string, userIDs []string) (string, error) {
-	users := make([]domain.ChatUser, len(userIDs))
+	users := make([]*domain.ChatUser, len(userIDs))
 
 	for i, id := range userIDs {
-		users[i] = *domain.NewChatUser(id)
+		users[i] = domain.NewChatUser(id)
 	}
 
 	c := domain.NewChat(name, users)
@@ -51,7 +51,10 @@ func (s *ChatService) CreateMessage(ctx context.Context, text string, chatID str
 		return nil, errors.New("chat not found")
 	}
 
-	m := domain.NewMessage(chatID, text, domain.MessageUser{ID: userInfo.ID, Name: userInfo.Name})
+	m := domain.NewMessage(chatID, text, &domain.MessageUser{
+		ID:   userInfo.ID,
+		Name: userInfo.Name,
+	})
 
 	err := s.messageRepo.Create(ctx, m)
 

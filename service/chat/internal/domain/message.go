@@ -13,18 +13,18 @@ type MessageUser struct {
 
 type Message struct {
 	ID        string
-	Sender    MessageUser
+	Sender    *MessageUser
 	ChatID    string
 	Text      string
 	CreatedAt time.Time
 }
 
-func NewMessage(chatID string, text string, sender MessageUser) *Message {
+func NewMessage(chatID string, text string, sender *MessageUser) *Message {
 	return &Message{
 		ID:     primitive.NewObjectID().Hex(),
 		ChatID: chatID,
 		Text:   text,
-		Sender: MessageUser{
+		Sender: &MessageUser{
 			ID:   sender.ID,
 			Name: sender.Name,
 		},

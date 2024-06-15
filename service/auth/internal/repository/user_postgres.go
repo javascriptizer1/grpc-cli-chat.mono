@@ -7,13 +7,14 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/converter"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/domain"
-
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/repository/dao"
 	"github.com/jmoiron/sqlx"
 )
 
 const (
-	users = "users"
+	usersTable = "users"
 )
 
 type UserRepository struct {
@@ -28,92 +29,78 @@ func NewUserRepository(db *sqlx.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) Create(_ context.Context, input *domain.User) error {
-	query, args, err := r.builder.Insert(users).Columns(
-		"id",
-		"name",
-		"email",
-		"password_hash",
-		"role",
-		"created_at",
-		"updated_at",
+func (r *UserRepository) Create(ctx context.Context, user *domain.User) error {
+	query, args, err := r.builder.Insert(usersTable).Columns(
+		"id", "name", "email", "password_hash", "role", "created_at", "updated_at",
 	).Values(
-		input.ID,
-		input.Name,
-		input.Email,
-		input.Password,
-		input.Role,
-		input.CreatedAt,
-		input.UpdatedAt,
+		user.ID, user.Name, user.Email, user.Password, user.Role, user.CreatedAt, user.UpdatedAt,
 	).ToSql()
 
 	if err != nil {
 		return err
 	}
 
-	row := r.db.QueryRow(query, args...)
-
-	return row.Err()
+	_, err = r.db.ExecContext(ctx, query, args...)
+	return err
 }
 
-func (r *UserRepository) OneByID(_ context.Context, id uuid.UUID) (u *domain.User, err error) {
-	var rawUser User
+func (r *UserRepository) OneByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+	var rawUser dao.User
 
 	query, args, err := r.builder.
 		Select("id", "name", "email", "password_hash", "role", "created_at", "updated_at").
-		From(users).
+		From(usersTable).
 		Where(sq.Eq{"id": id.String()}).
 		ToSql()
 
 	if err != nil {
-		return u, err
+		return nil, err
 	}
 
-	err = r.db.Get(&rawUser, query, args...)
-
+	err = r.db.GetContext(ctx, &rawUser, query, args...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return u, errors.New("user not found")
+			return nil, errors.New("user not found")
 		}
 
-		return u, err
+		return nil, err
 	}
 
-	return rawUser.ToDomain(), nil
+	return converter.ToDomainUser(&rawUser), nil
 }
 
-func (r *UserRepository) OneByEmail(_ context.Context, email string) (u *domain.User, err error) {
-	var rawUser User
+func (r *UserRepository) OneByEmail(ctx context.Context, email string) (*domain.User, error) {
+	var rawUser dao.User
 
 	query, args, err := r.builder.
 		Select("id", "name", "email", "password_hash", "role", "created_at", "updated_at").
-		From(users).
+		From(usersTable).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 
 	if err != nil {
-		return u, err
+		return nil, err
 	}
 
-	err = r.db.Get(&rawUser, query, args...)
+	err = r.db.GetContext(ctx, &rawUser, query, args...)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return u, errors.New("user not found")
+			return nil, errors.New("user not found")
 		}
 
-		return u, err
+		return nil, err
 	}
 
-	return rawUser.ToDomain(), nil
+	return converter.ToDomainUser(&rawUser), nil
 }
 
-func (r *UserRepository) List(_ context.Context, filter *domain.UserListFilter) (u []*domain.User, err error) {
-	var rawUsers []*User
+func (r *UserRepository) List(ctx context.Context, filter *domain.UserListFilter) ([]*domain.User, error) {
+	var rawUsers []*dao.User
 
 	builder := r.builder.
 		Select("id", "name", "email", "password_hash", "role", "created_at", "updated_at").
-		From(users).
+		From(usersTable).
 		Limit(uint64(filter.Limit())).
 		Offset(uint64(filter.Offset())).
 		OrderBy("updated_at desc")
@@ -125,30 +112,29 @@ func (r *UserRepository) List(_ context.Context, filter *domain.UserListFilter) 
 			uIDs[i] = v.String()
 		}
 
-		builder.Where(sq.Eq{"id": uIDs})
+		builder = builder.Where(sq.Eq{"id": uIDs})
 	}
 
 	query, args, err := builder.ToSql()
 
 	if err != nil {
-		return u, err
+		return nil, err
 	}
 
-	err = r.db.Select(&rawUsers, query, args...)
-
+	err = r.db.SelectContext(ctx, &rawUsers, query, args...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return u, errors.New("users not found")
+			return nil, errors.New("users not found")
 		}
-		return u, err
+
+		return nil, err
 	}
 
-	return ListToDomain(rawUsers), nil
+	return converter.ToDomainUserList(rawUsers), nil
 }
 
-func (r *UserRepository) Count(_ context.Context, filter *domain.UserListFilter) (total uint32, err error) {
-
-	builder := r.builder.Select("COUNT(id)").From(users)
+func (r *UserRepository) Count(ctx context.Context, filter *domain.UserListFilter) (uint32, error) {
+	builder := r.builder.Select("COUNT(id)").From(usersTable)
 
 	if len(filter.UserIDs) != 0 {
 		uIDs := make([]string, len(filter.UserIDs))
@@ -157,19 +143,21 @@ func (r *UserRepository) Count(_ context.Context, filter *domain.UserListFilter)
 			uIDs[i] = v.String()
 		}
 
-		builder.Where(sq.Eq{"id": uIDs})
+		builder = builder.Where(sq.Eq{"id": uIDs})
 	}
 
 	query, args, err := builder.ToSql()
 
 	if err != nil {
-		return total, err
+		return 0, err
 	}
 
-	row := r.db.QueryRow(query, args...)
+	var total uint32
 
-	if err = row.Scan(&total); err != nil {
-		return total, err
+	err = r.db.GetContext(ctx, &total, query, args...)
+
+	if err != nil {
+		return 0, err
 	}
 
 	return total, nil
