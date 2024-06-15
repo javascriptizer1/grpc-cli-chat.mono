@@ -18,15 +18,17 @@ type Config struct {
 
 func (c *Config) toURL() string {
 	if c.Port == "" {
-		return fmt.Sprintf("mongodb+srv://%s:%s@%s", c.User, c.Password, c.Host)
+		return fmt.Sprintf("mongodb+srv://%s:%s@%s/?tls=true&tlsInsecure=true", c.User, c.Password, c.Host)
 	}
 
 	return fmt.Sprintf("mongodb://%s:%s@%s:%s", c.User, c.Password, c.Host, c.Port)
 }
 
 func New(ctx context.Context, config Config) (*mongo.Database, error) {
-	clientOption := options.Client().ApplyURI(config.toURL())
-	client, err := mongo.Connect(ctx, clientOption)
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+
+	opts := options.Client().ApplyURI(config.toURL()).SetServerAPIOptions(serverAPI)
+	client, err := mongo.Connect(ctx, opts)
 
 	if err != nil {
 		return nil, err
