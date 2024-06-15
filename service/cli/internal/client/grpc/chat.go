@@ -16,8 +16,9 @@ func NewChatClient(client chatv1.ChatServiceClient) *ChatClient {
 	return &ChatClient{client: client}
 }
 
-func (c *ChatClient) CreateChat(ctx context.Context, userIDs []string) (id string, err error) {
+func (c *ChatClient) CreateChat(ctx context.Context, name string, userIDs []string) (id string, err error) {
 	res, err := c.client.CreateChat(ctx, &chatv1.CreateChatRequest{
+		Name:    name,
 		UserIDs: userIDs,
 	})
 

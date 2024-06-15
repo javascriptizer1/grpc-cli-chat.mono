@@ -26,7 +26,7 @@ type AuthClient interface {
 
 type ChatClient interface {
 	ConnectChat(ctx context.Context, chatID string) (cha chatv1.ChatService_ConnectChatClient, err error)
-	CreateChat(ctx context.Context, emails []string) (id string, err error)
+	CreateChat(ctx context.Context, name string, emails []string) (id string, err error)
 	SendMessage(ctx context.Context, text string, chatID string) error
 	GetChatList(ctx context.Context, p *pagination.Pagination) ([]*domain.ChatListInfo, uint32, error)
 	GetChat(ctx context.Context, id string) (*domain.ChatInfo, error)
@@ -39,7 +39,7 @@ type UserClient interface {
 
 type Handler interface {
 	ConnectChat(ctx context.Context, chatID string)
-	CreateChat(ctx context.Context, emails []string) (string, error)
+	CreateChat(ctx context.Context, name string, emails []string) (string, error)
 	Login(ctx context.Context, login string, password string) (string, error)
 	Register(ctx context.Context, in dto.RegisterInputDto) (string, error)
 	SendMessage(ctx context.Context, text string, chatID string) error

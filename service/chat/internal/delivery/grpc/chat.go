@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	chatv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/chat_v1"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/array"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/domain"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/logger"
@@ -36,7 +37,15 @@ func NewGrpcChatImplementation(chatService ChatService, userClient UserClient) *
 }
 
 func (impl *ChatImplementation) CreateChat(ctx context.Context, request *chatv1.CreateChatRequest) (*chatv1.CreateChatResponse, error) {
-	id, err := impl.chatService.Create(ctx, request.GetName(), request.GetUserIDs())
+	u, err := impl.userClient.GetUserInfo(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	userIDs := array.Unique(append(request.GetUserIDs(), u.ID))
+
+	id, err := impl.chatService.Create(ctx, request.GetName(), userIDs)
 
 	if err != nil {
 		return nil, err
