@@ -22,10 +22,10 @@ spec:
             - configMapRef:
                 name: auth-backend-env-config
           command: ["/bin/sh"]
-          args: ["/opt/service/auth/run-migrations.sh"]
+          args: ["/opt/scripts/run-migrations.sh"]
           volumeMounts:
             - name: bash-script-migrations
-              mountPath: /opt/service/auth/
+              mountPath: /opt/scripts/
               subPath: run-migrations.sh
       containers:
         - name: auth-backend

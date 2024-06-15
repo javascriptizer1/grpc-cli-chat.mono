@@ -14,4 +14,4 @@ data:
     chmod +x $HOME/.goose/bin/goose
 
     set GOOSE_DBSTRING=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable
-    $HOME/.goose/bin/goose -dir migrations/postgres postgres up
+    $HOME/.goose/bin/goose -dir opt/service/auth/migrations/postgres postgres up

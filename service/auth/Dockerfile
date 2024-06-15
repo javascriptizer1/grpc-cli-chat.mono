@@ -22,4 +22,4 @@ WORKDIR /opt/service/auth
 COPY --from=builder /opt/app/main /main
 COPY --from=builder /opt/service/auth/migrations /migrations
 
-ENTRYPOINT ["/main"]
+CMD ["/main"]
