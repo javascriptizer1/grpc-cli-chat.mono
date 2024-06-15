@@ -22,7 +22,7 @@ Welcome to the **GRPC CLI Chat Backend**! This monorepo houses a powerful chat a
 Ensure you have the following installed on your system:
 
 - Docker & Docker Compose
-- Go (latest version)
+- Go (1.22.4)
 - Make
 
 ### Setup Instructions
@@ -72,6 +72,12 @@ go run main.go register --name "John Doe" --email "john@example.com" --password 
 
 ```bash
 go run main.go login --login "john@example.com" --password "password"
+```
+
+- **List of Users**
+
+```bash
+go run main.go list-user
 ```
 
 ### Chat Service Commands
@@ -133,7 +139,7 @@ Our project is organized as a monorepository containing three main applications:
 
 - **Interceptors**: Automatically handle token refresh to ensure seamless user experience.
 
-### Development 💻
+## Development 💻
 
 - **Generate Go from Proto**
 
@@ -164,6 +170,51 @@ make lint
 ```bash
 make build
 ```
+
+## Deployment ⚙️
+
+### Kubernetes Deployment
+
+The application is deployed in a Kubernetes cluster, ensuring high availability, scalability, and efficient resource management. The deployment process is automated using GitHub Actions.
+
+### GitHub Actions CI/CD
+
+I use GitHub Actions for continuous integration and deployment. The workflow includes:
+
+1. **Linting**: Code is checked using `golangci-lint`.
+2. **Building Docker Images**: Docker images are built for each service.
+3. **Pushing Docker Images**: The built images are pushed to Docker Hub.
+4. **Deploying to Kubernetes**: The images are deployed to a Kubernetes cluster using Helm charts.
+
+### Modern Deployment Practices
+
+Deployment setup exemplifies modern DevOps practices by:
+
+- **Automated CI/CD**: Minimizing manual intervention and reducing the risk of errors.
+- **Environment Configurations**: Supporting multiple environments (development, production) with ease.
+- **Scalability and Reliability**: Leveraging Kubernetes for managing and scaling microservices effectively.
+- **Security**: Storing sensitive information like Docker Hub credentials and Kubernetes config securely in GitHub Secrets.
+
+### Environment Variables
+
+Ensure that the following environment variables are set in your GitHub repository secrets:
+
+- `DOCKER_HUB_USERNAME`: Your Docker Hub username.
+- `DOCKER_HUB_PASSWORD`: Your Docker Hub password.
+- `KUBECONFIG`: Your Kubernetes configuration file content.
+
+## Future Plans 🌅
+
+My plan to rewrite the CLI application from Cobra to Bubble Tea to build a full-fledged console UI. This will provide a more interactive and user-friendly experience for users interacting with my services via the command line.
+
+### Why Bubble Tea?
+
+- **Rich Interactive UI**: Bubble Tea allows us to build rich, interactive UIs directly in the terminal, enhancing user experience.
+- **Customization**: Offers a high degree of customization, enabling us to tailor the interface to my specific needs.
+- **Active Community**: Supported by an active community and regularly updated. [Bubble Tea GitHub Repository](https://github.com/charmbracelet/bubbletea)
+- **Ease of Use**: Simplifies the development of complex terminal applications, making the process more intuitive and efficient.
+
+With these enhancements, I aim to provide a powerful and engaging CLI tool that leverages the capabilities of Bubble Tea to its fullest potential.
 
 ## Acknowledgments 🙌
 
