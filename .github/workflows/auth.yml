@@ -156,7 +156,7 @@ jobs:
         run: |
           echo "$VPS_SSH_KEY" > deploy_key.pem
           chmod 600 deploy_key.pem
-          scp -i deploy_key.pem -o StrictHostKeyChecking=no -r /service/auth/.env $VPS_USER@$VPS_HOST:/root/apps/auth/.env
+          scp -i deploy_key.pem -o StrictHostKeyChecking=no -r .env $VPS_USER@$VPS_HOST:/root/apps/auth/.env
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "chmod 600 /root/apps/auth/.env"
 
       - name: Copy binary to VPS
