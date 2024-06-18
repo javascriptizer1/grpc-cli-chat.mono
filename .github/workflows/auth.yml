@@ -156,14 +156,14 @@ jobs:
         run: |
           echo "$VPS_SSH_KEY" > deploy_key.pem
           chmod 600 deploy_key.pem
-          scp -i deploy_key.pem -o StrictHostKeyChecking=no -r .env $VPS_USER@$VPS_HOST:/root/apps/auth/.env
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "chmod 600 /root/apps/auth/.env"
+          scp -i deploy_key.pem -o StrictHostKeyChecking=no -r .env $VPS_USER@$VPS_HOST:/home/$VPS_USER/apps/auth/.env
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "chmod 600 /home/$VPS_USER/apps/auth/.env"
 
       - name: Copy binary to VPS
         run: |
           go mod download
           go build -o ./bin ./service/auth/cmd/app/main.go
-          scp -i deploy_key.pem -o StrictHostKeyChecking=no ./bin $VPS_USER@$VPS_HOST:/root/apps/auth/bin
+          scp -i deploy_key.pem -o StrictHostKeyChecking=no ./bin $VPS_USER@$VPS_HOST:/home/$VPS_USER/apps/auth/bin
 
       - name: Set up systemd service on VPS
         run: |
