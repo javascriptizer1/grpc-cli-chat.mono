@@ -7,6 +7,10 @@ on:
         description: 'Deploy the service'
         required: true
         default: 'false'
+      deploy_target:
+        description: 'Deployment target (k8s or vps)'
+        required: true
+        default: 'k8s'
 
 env:
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -14,6 +18,9 @@ env:
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
   NAMESPACE: ${{ secrets.NAMESPACE }}
   IMAGE: andreq21/chat:${{ github.sha }}
+  VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+  VPS_USER: ${{ secrets.VPS_USER }}
+  VPS_HOST: ${{ secrets.VPS_HOST }}
 
 jobs:
   lint:
@@ -39,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: chat-production
     needs: lint
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true' && github.event.inputs.deploy_target == 'k8s'
 
     steps:
       - name: Checkout code
@@ -57,11 +64,11 @@ jobs:
         run: |
           docker push $IMAGE
 
-  deploy:
+  deploy-k8s:
     runs-on: ubuntu-latest
     environment: chat-production
     needs: build
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true' && github.event.inputs.deploy_target == 'k8s'
 
     steps:
       - name: Checkout code
@@ -100,3 +107,51 @@ jobs:
       - name: Deploy to Kubernetes
         run: |
           helm upgrade --install chat ./deploy/helm/chat --namespace=$NAMESPACE --set app.image.tag=$IMAGE
+
+  deploy-vps:
+    runs-on: ubuntu-latest
+    environment: chat-production
+    needs: lint
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true' && github.event.inputs.deploy_target == 'vps'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: Create .env file
+        run: |
+          echo "ENV=${{ vars.ENV }}" >> .env
+          echo "MONGO_HOST=${{ vars.MONGO_HOST }}" >> .env
+          echo "MONGO_PORT=${{ vars.MONGO_PORT }}" >> .env
+          echo "MONGO_USER=${{ vars.MONGO_USER }}" >> .env
+          echo "MONGO_PASSWORD=${{ vars.MONGO_PASSWORD }}" >> .env
+          echo "MONGO_DB=${{ vars.MONGO_DB }}" >> .env
+          echo "GRPC_SERVER_HOST=${{ vars.GRPC_SERVER_HOST }}" >> .env
+          echo "GRPC_SERVER_PORT=${{ vars.GRPC_SERVER_PORT }}" >> .env
+          echo "GRPC_SERVER_TIMEOUT=${{ vars.GRPC_SERVER_TIMEOUT }}" >> .env
+          echo "GRPC_AUTH_HOST=${{ vars.GRPC_AUTH_HOST }}" >> .env
+          echo "GRPC_AUTH_PORT=${{ vars.GRPC_AUTH_PORT }}" >> .env
+
+      - name: Copy .env file to VPS
+        run: |
+          echo "$VPS_SSH_KEY" > deploy_key.pem
+          chmod 600 deploy_key.pem
+          scp -i deploy_key.pem -o StrictHostKeyChecking=no -r .env $VPS_USER@$VPS_HOST:/home/$VPS_USER/apps/chat/.env
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "chmod 600 /home/$VPS_USER/apps/chat/.env"
+
+      - name: Copy binary to VPS
+        run: |
+          go mod download
+          go build -o ./bin ./service/chat/cmd/app/main.go
+          scp -i deploy_key.pem -o StrictHostKeyChecking=no ./bin $VPS_USER@$VPS_HOST:/home/$VPS_USER/apps/chat/bin
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "sudo mv /home/$VPS_USER/apps/chat/bin /root/apps/chat/bin"
+
+      - name: Set up systemd service on VPS
+        run: |
+          scp -i deploy_key.pem -o StrictHostKeyChecking=no deploy/vps/chat.ini $VPS_USER@$VPS_HOST:/home/$VPS_USER/apps/chat/chat.ini
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "sudo mv /home/$VPS_USER/apps/chat/chat.ini /etc/systemd/system/chat.service && sudo systemctl daemon-reload && sudo systemctl restart chat.service && sudo systemctl status chat.service"

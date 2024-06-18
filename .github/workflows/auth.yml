@@ -164,6 +164,7 @@ jobs:
           go mod download
           go build -o ./bin ./service/auth/cmd/app/main.go
           scp -i deploy_key.pem -o StrictHostKeyChecking=no ./bin $VPS_USER@$VPS_HOST:/home/$VPS_USER/apps/auth/bin
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "sudo mv /home/$VPS_USER/apps/auth/bin /root/apps/auth/bin"
 
       - name: Set up systemd service on VPS
         run: |
