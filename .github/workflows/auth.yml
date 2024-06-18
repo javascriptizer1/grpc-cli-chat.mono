@@ -168,4 +168,4 @@ jobs:
       - name: Set up systemd service on VPS
         run: |
           scp -i deploy_key.pem -o StrictHostKeyChecking=no deploy/vps/auth.ini $VPS_USER@$VPS_HOST:/home/$VPS_USER/apps/auth/auth.ini
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "sudo mv /home/$VPS_USER/apps/auth/auth.ini /etc/systemd/system/auth && sudo systemctl daemon-reload && sudo systemctl restart auth && sudo systemctl status auth"
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "sudo mv /home/$VPS_USER/apps/auth/auth.ini /etc/systemd/system/auth.service && sudo systemctl daemon-reload && sudo systemctl restart auth.service && sudo systemctl status auth.service"
