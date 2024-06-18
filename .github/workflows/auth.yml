@@ -154,19 +154,18 @@ jobs:
 
       - name: Copy .env file to VPS
         run: |
-          mkdir -p ~/.ssh
-          echo "$VPS_SSH_KEY" > ~/.ssh/id_rsa
+          echo "$VPS_SSH_KEY" > deploy_key.pem
           chmod 600 ~/.ssh/id_rsa
-          scp -o StrictHostKeyChecking=no -r /service/auth/.env $VPS_USER@$VPS_HOST:/root/apps/auth/.env
-          ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "chmod 600 /root/apps/auth/.env"
+          scp -i deploy_key.pem -o StrictHostKeyChecking=no -r /service/auth/.env $VPS_USER@$VPS_HOST:/root/apps/auth/.env
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "chmod 600 /root/apps/auth/.env"
 
       - name: Copy binary to VPS
         run: |
           go mod download
           go build -o ./bin ./service/auth/cmd/app/main.go
-          scp -o StrictHostKeyChecking=no ./bin $VPS_USER@$VPS_HOST:/root/apps/auth/bin
+          scp -i deploy_key.pem -o StrictHostKeyChecking=no ./bin $VPS_USER@$VPS_HOST:/root/apps/auth/bin
 
       - name: Set up systemd service on VPS
         run: |
-          scp -o StrictHostKeyChecking=no deploy/vps/auth.ini $VPS_USER@$VPS_HOST:/etc/systemd/system/auth
-          ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST 'systemctl daemon-reload && systemctl restart auth && systemctl status auth'
+          scp -i deploy_key.pem -o StrictHostKeyChecking=no deploy/vps/auth.ini $VPS_USER@$VPS_HOST:/etc/systemd/system/auth
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST 'systemctl daemon-reload && systemctl restart auth && systemctl status auth'
