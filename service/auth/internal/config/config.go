@@ -1,8 +1,10 @@
 package config
 
 import (
+	"flag"
 	"log"
 	"net"
+	"os"
 	"strconv"
 	"time"
 
@@ -54,17 +56,37 @@ type DBConfig struct {
 }
 
 func MustLoad() *Config {
-	err := godotenv.Load()
+	var cfg Config
+	var err error
+
+	configPath := fetchConfigPath()
+
+	if configPath != "" {
+		err = godotenv.Load(configPath)
+	} else {
+		err = godotenv.Load()
+	}
 
 	if err != nil {
 		log.Printf("No loading .env file: %v", err)
 	}
-
-	var cfg Config
 
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		panic("config is empty: " + err.Error())
 	}
 
 	return &cfg
+}
+
+func fetchConfigPath() string {
+	var res string
+
+	flag.StringVar(&res, "config", "", "path to config file")
+	flag.Parse()
+
+	if res == "" {
+		res = os.Getenv("CONFIG_PATH")
+	}
+
+	return res
 }
