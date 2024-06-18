@@ -201,7 +201,7 @@ Ensure that the following environment variables are set in your GitHub repositor
 
 - `DOCKER_HUB_USERNAME`: Your Docker Hub username.
 - `DOCKER_HUB_PASSWORD`: Your Docker Hub password.
-- `KUBECONFIG`: Your Kubernetes configuration file content.
+- `KUBE_CONFIG`: Your Kubernetes configuration file content.
 
 ## Future Plans 🌅
 

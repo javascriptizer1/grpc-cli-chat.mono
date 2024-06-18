@@ -7,12 +7,19 @@ on:
         description: 'Deploy the service'
         required: true
         default: 'false'
+      deploy_target:
+        description: 'Deployment target (k8s or vps)'
+        required: true
+        default: 'k8s'
 
 env:
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
   NAMESPACE: ${{ secrets.NAMESPACE }}
+  VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+  VPS_USER: ${{ secrets.VPS_USER }}
+  VPS_HOST: ${{ secrets.VPS_HOST }}
   IMAGE: andreq21/auth:${{ github.sha }}
   IMAGE_MIGRATOR: andreq21/auth-migrator:${{ github.sha }}
 
@@ -40,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: auth-production
     needs: lint
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true' && github.event.inputs.deploy_target == 'k8s'
 
     steps:
       - name: Checkout code
@@ -60,11 +67,11 @@ jobs:
           docker push $IMAGE
           docker push $IMAGE_MIGRATOR
 
-  deploy:
+  deploy-k8s:
     runs-on: ubuntu-latest
     environment: auth-production
     needs: build
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true' && github.event.inputs.deploy_target == 'k8s'
 
     steps:
       - name: Checkout code
@@ -109,3 +116,57 @@ jobs:
       - name: Deploy to Kubernetes
         run: |
           helm upgrade --install auth ./deploy/helm/auth --namespace=$NAMESPACE --set app.image.tag=$IMAGE --set migrator.image.tag=$IMAGE_MIGRATOR
+
+  deploy-vps:
+    runs-on: ubuntu-latest
+    environment: auth-production
+    needs: lint
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true' && github.event.inputs.deploy_target == 'vps'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: Create .env file
+        run: |
+          echo "ENV=${{ vars.ENV }}" >> .env
+          echo "POSTGRES_HOST=${{ vars.POSTGRES_HOST }}" >> .env
+          echo "POSTGRES_PORT=${{ vars.POSTGRES_PORT }}" >> .env
+          echo "POSTGRES_USER=${{ vars.POSTGRES_USER }}" >> .env
+          echo "POSTGRES_PASSWORD=${{ vars.POSTGRES_PASSWORD }}" >> .env
+          echo "POSTGRES_DB=${{ vars.POSTGRES_DB }}" >> .env
+          echo "HTTP_SERVER_HOST=${{ vars.HTTP_SERVER_HOST }}" >> .env
+          echo "HTTP_SERVER_PORT=${{ vars.HTTP_SERVER_PORT }}" >> .env
+          echo "HTTP_SERVER_TIMEOUT=${{ vars.HTTP_SERVER_TIMEOUT }}" >> .env
+          echo "GRPC_SERVER_HOST=${{ vars.GRPC_SERVER_HOST }}" >> .env
+          echo "GRPC_SERVER_PORT=${{ vars.GRPC_SERVER_PORT }}" >> .env
+          echo "GRPC_SERVER_TIMEOUT=${{ vars.GRPC_SERVER_TIMEOUT }}" >> .env
+          echo "JWT_ACCESS_SECRET=${{ vars.JWT_ACCESS_SECRET }}" >> .env
+          echo "JWT_ACCESS_DURATION=${{ vars.JWT_ACCESS_DURATION }}" >> .env
+          echo "JWT_REFRESH_SECRET=${{ vars.JWT_REFRESH_SECRET }}" >> .env
+          echo "JWT_REFRESH_DURATION=${{ vars.JWT_REFRESH_DURATION }}" >> .env
+          echo "POSTGRES_URL=${{ vars.POSTGRES_URL }}" >> .env
+
+      - name: Copy .env file to VPS
+        run: |
+          mkdir -p ~/.ssh
+          echo "$VPS_SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          scp -o StrictHostKeyChecking=no -r /service/auth/.env $VPS_USER@$VPS_HOST:/root/apps/auth/.env
+          ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "chmod 600 /root/apps/auth/.env"
+
+      - name: Copy binary to VPS
+        run: |
+          go mod download
+          go build -o ./bin ./service/auth/cmd/app/main.go
+          scp -o StrictHostKeyChecking=no ./bin $VPS_USER@$VPS_HOST:/root/apps/auth/bin
+
+      - name: Set up systemd service on VPS
+        run: |
+          scp -o StrictHostKeyChecking=no deploy/vps/auth.ini $VPS_USER@$VPS_HOST:/etc/systemd/system/auth
+          ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST 'systemctl daemon-reload && systemctl restart auth && systemctl status auth'
