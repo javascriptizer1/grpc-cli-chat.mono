@@ -15,7 +15,7 @@ func Launch() {
 	err := sp.TokenManager(ctx).Load()
 
 	if err != nil {
-		log.Fatalf("Failed to load token: %v", err)
+		log.Printf("Failed to load token: %v", err)
 	}
 
 	p := tea.NewProgram(

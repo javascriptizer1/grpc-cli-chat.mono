@@ -29,10 +29,12 @@ type createChatModel struct {
 	selectedUserIDs map[string]string
 	cursorMode      cursor.Mode
 	focusedElement  int
+	width           int
+	height          int
 	err             error
 }
 
-func initialCreateChatModel(ctx context.Context, sp *app.ServiceProvider) createChatModel {
+func initialCreateChatModel(ctx context.Context, sp *app.ServiceProvider, width int, height int) createChatModel {
 	name := textinput.New()
 	name.Placeholder = "Chat Name"
 	name.Cursor.Style = cursorStyle
@@ -83,12 +85,19 @@ func initialCreateChatModel(ctx context.Context, sp *app.ServiceProvider) create
 		table:           t,
 		selectedUserIDs: make(map[string]string),
 		focusedElement:  0,
+		width:           width,
+		height:          height,
 		err:             err,
 	}
 }
 
 func (m createChatModel) Init() tea.Cmd {
-	return textinput.Blink
+	return tea.Batch(textinput.Blink, func() tea.Msg {
+		return tea.WindowSizeMsg{
+			Width:  m.width,
+			Height: m.height,
+		}
+	})
 }
 
 func (m createChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -111,6 +120,9 @@ func (m createChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds[0] = m.name.Cursor.SetMode(m.cursorMode)
 
 			return m, tea.Batch(cmds...)
+		case tea.KeyShiftTab:
+			chatListModel := initialChatListModel(m.ctx, m.sp, m.width, m.height)
+			return chatListModel, chatListModel.Init()
 		case tea.KeyTab:
 			m.toggleFocus()
 		case tea.KeyEnter:
@@ -125,10 +137,13 @@ func (m createChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, nil
 				}
 
-				chatListModel := initialChatListModel(m.ctx, m.sp)
+				chatListModel := initialChatListModel(m.ctx, m.sp, m.width, m.height)
 				return chatListModel, chatListModel.Init()
 			}
 		}
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 	}
 
 	if m.focusedElement == 0 {
@@ -177,7 +192,7 @@ func (m createChatModel) View() string {
 	view.WriteString(cursorModeHelpStyle.Render(m.cursorMode.String()))
 	view.WriteString(helpStyle.Render(" (ctrl+r to change style)"))
 
-	view.WriteString("\n\nPress Tab to switch focus, or Esc/Ctrl+C to exit.")
+	view.WriteString("\n\nPress Tab to switch focus, Shift+Tab to return chat list or Esc/Ctrl+C to exit.")
 
 	return view.String()
 }

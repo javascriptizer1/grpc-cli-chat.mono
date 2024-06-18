@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -12,14 +13,25 @@ import (
 
 var docStyle = lipgloss.NewStyle().Margin(1, 2)
 
-type chatListModel struct {
-	ctx  context.Context
-	sp   *app.ServiceProvider
-	list list.Model
-	err  error
+type listItem struct {
+	title string
+	desc  string
 }
 
-func initialChatListModel(ctx context.Context, sp *app.ServiceProvider) chatListModel {
+func (i listItem) Title() string       { return i.title }
+func (i listItem) Description() string { return i.desc }
+func (i listItem) FilterValue() string { return i.title }
+
+type chatListModel struct {
+	ctx    context.Context
+	sp     *app.ServiceProvider
+	list   list.Model
+	width  int
+	height int
+	err    error
+}
+
+func initialChatListModel(ctx context.Context, sp *app.ServiceProvider, width int, height int) chatListModel {
 	chats, _, err := sp.HandlerService(ctx).GetChatList(ctx, pagination.New(10, 1))
 
 	items := make([]list.Item, len(chats))
@@ -32,15 +44,22 @@ func initialChatListModel(ctx context.Context, sp *app.ServiceProvider) chatList
 	l.Title = "Chats"
 
 	return chatListModel{
-		ctx:  ctx,
-		sp:   sp,
-		list: l,
-		err:  err,
+		ctx:    ctx,
+		sp:     sp,
+		list:   l,
+		width:  width,
+		height: height,
+		err:    err,
 	}
 }
 
 func (m chatListModel) Init() tea.Cmd {
-	return nil
+	return func() tea.Msg {
+		return tea.WindowSizeMsg{
+			Width:  m.width,
+			Height: m.height,
+		}
+	}
 }
 
 func (m chatListModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -54,12 +73,20 @@ func (m chatListModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyEnter:
 			selectedChatID := m.list.SelectedItem().(listItem).Description()
-			chatModel := initialChatModel(m.ctx, m.sp, selectedChatID)
-			return chatModel, chatModel.Init()
+			if selectedChatID != "" {
+				chatModel := initialChatModel(m.ctx, m.sp, selectedChatID)
+				return chatModel, chatModel.Init()
+			}
+
+		case tea.KeyTab:
+			createChatModel := initialCreateChatModel(m.ctx, m.sp, m.width, m.height)
+			return createChatModel, createChatModel.Init()
 		}
 
 	case tea.WindowSizeMsg:
 		h, v := docStyle.GetFrameSize()
+		m.width = msg.Width
+		m.height = msg.Height
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 	}
 
@@ -69,5 +96,15 @@ func (m chatListModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m chatListModel) View() string {
-	return docStyle.Render(m.list.View())
+	var b strings.Builder
+
+	b.WriteString(docStyle.Render(m.list.View()))
+
+	if len(m.list.Items()) == 0 {
+		b.WriteString("\nYou don`t have any chats. Create new")
+	}
+
+	b.WriteString(helpStyle.Render("\npress Tab to switch to create new chat"))
+
+	return b.String()
 }

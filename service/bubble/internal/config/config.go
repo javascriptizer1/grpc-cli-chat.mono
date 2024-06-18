@@ -3,7 +3,6 @@ package config
 import (
 	"log"
 	"net"
-	"os"
 	"path/filepath"
 	"strconv"
 
@@ -18,11 +17,7 @@ type Config struct {
 }
 
 func (c *Config) ClientConfigPath() string {
-	homeDir, _ := os.UserHomeDir()
-
-	path := filepath.Join(homeDir, "gchat", ".config.json")
-
-	return path
+	return filepath.Join("gchat", ".config.json")
 }
 
 type GRPCAuthConfig struct {

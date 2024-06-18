@@ -30,6 +30,8 @@ type authModel struct {
 	focusIndex int
 	inputs     []textinput.Model
 	cursorMode cursor.Mode
+	width      int
+	height     int
 	err        error
 }
 
@@ -80,16 +82,16 @@ func (m authModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyCtrlR:
 			m.cursorMode++
-			
+
 			if m.cursorMode > cursor.CursorHide {
 				m.cursorMode = cursor.CursorBlink
 			}
 			cmds := make([]tea.Cmd, len(m.inputs))
-			
+
 			for i := range m.inputs {
 				cmds[i] = m.inputs[i].Cursor.SetMode(m.cursorMode)
 			}
-			
+
 			return m, tea.Batch(cmds...)
 
 		case tea.KeyTab, tea.KeyShiftTab:
@@ -99,7 +101,7 @@ func (m authModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter, tea.KeyUp, tea.KeyDown:
 			s := msg.String()
 
-			if s == tea.KeyEnd.String() {
+			if s == tea.KeyEnter.String() {
 				if m.focusIndex == len(m.inputs) {
 					login := m.inputs[0].Value()
 					password := m.inputs[1].Value()
@@ -116,8 +118,8 @@ func (m authModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, nil
 					}
 
-					tabModel := InitialTabsModel(m.ctx, m.sp)
-					return tabModel, tabModel.Init()
+					chatListModel := initialChatListModel(m.ctx, m.sp, m.width, m.height)
+					return chatListModel, chatListModel.Init()
 				}
 			}
 
@@ -149,6 +151,10 @@ func (m authModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			return m, tea.Batch(cmds...)
 		}
+
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 	}
 
 	cmd := m.updateInputs(msg)
@@ -173,6 +179,8 @@ func (m authModel) View() string {
 
 	if m.err != nil {
 		b.WriteString(fmt.Sprintf("Error: %v\n", m.err))
+	} else {
+		b.WriteRune('\n')
 	}
 
 	b.WriteString(helpStyle.Render("cursor mode is "))
