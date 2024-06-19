@@ -177,6 +177,10 @@ make build
 
 The application is deployed in a Kubernetes cluster, ensuring high availability, scalability, and efficient resource management. The deployment process is automated using GitHub Actions.
 
+### VPS Deployment
+
+In addition to Kubernetes, the application can also be deployed on a Virtual Private Server (VPS). This flexibility allows you to choose the deployment target that best fits your infrastructure and scaling needs. The deployment process, whether to Kubernetes or a VPS, is managed through GitHub Actions workflows.
+
 ### GitHub Actions CI/CD
 
 I use GitHub Actions for continuous integration and deployment. The workflow includes:
@@ -185,6 +189,7 @@ I use GitHub Actions for continuous integration and deployment. The workflow inc
 2. **Building Docker Images**: Docker images are built for each service.
 3. **Pushing Docker Images**: The built images are pushed to Docker Hub.
 4. **Deploying to Kubernetes**: The images are deployed to a Kubernetes cluster using Helm charts.
+5. **Deploying to VPS**: The application is built, environment variables are configured, and binaries are transferred and set up on the VPS.
 
 ### Modern Deployment Practices
 
@@ -193,7 +198,8 @@ Deployment setup exemplifies modern DevOps practices by:
 - **Automated CI/CD**: Minimizing manual intervention and reducing the risk of errors.
 - **Environment Configurations**: Supporting multiple environments (development, production) with ease.
 - **Scalability and Reliability**: Leveraging Kubernetes for managing and scaling microservices effectively.
-- **Security**: Storing sensitive information like Docker Hub credentials and Kubernetes config securely in GitHub Secrets.
+- **Flexibility**: Offering deployment options to both Kubernetes and VPS, catering to different infrastructure needs.
+- **Security**: Storing sensitive information like Docker Hub credentials, Kubernetes config, and VPS SSH keys securely in GitHub Secrets.
 
 ### Environment Variables
 
@@ -202,6 +208,10 @@ Ensure that the following environment variables are set in your GitHub repositor
 - `DOCKER_HUB_USERNAME`: Your Docker Hub username.
 - `DOCKER_HUB_PASSWORD`: Your Docker Hub password.
 - `KUBE_CONFIG`: Your Kubernetes configuration file content.
+- `NAMESPACE`: Your Kubernetes namespace.
+- `VPS_SSH_KEY`: Your VPS SSH private key.
+- `VPS_USER`: Your VPS user.
+- `VPS_HOST`: Your VPS host address.
 
 ## Future Plans 🌅
 
