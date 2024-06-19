@@ -27,24 +27,22 @@ func NewFileTokenManager(filePath string) *FileTokenManager {
 }
 
 func (tm *FileTokenManager) Load() error {
-	var e error
 	tm.once.Do(func() {
 		tm.mu.Lock()
 
 		defer tm.mu.Unlock()
 
-		file, err := os.Open(tm.filePath)
-		e = err
+		file, _ := os.Open(tm.filePath)
 
 		defer func() {
 			_ = file.Close()
 		}()
 
-		err = json.NewDecoder(file).Decode(&tm.token)
-		e = err
+		_ = json.NewDecoder(file).Decode(&tm.token)
+
 	})
 
-	return e
+	return nil
 }
 
 func (tm *FileTokenManager) Save() error {

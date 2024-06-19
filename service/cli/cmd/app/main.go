@@ -1,7 +1,13 @@
 package main
 
-import "github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/cmd"
+import (
+	"log"
+
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		log.Fatalf("failed to execute root command: %s", err.Error())
+	}
 }

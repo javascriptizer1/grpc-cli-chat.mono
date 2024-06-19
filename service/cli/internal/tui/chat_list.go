@@ -1,4 +1,4 @@
-package cmd
+package tui
 
 import (
 	"context"
@@ -8,19 +8,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/bubble/internal/app"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/domain"
 )
 
 var docStyle = lipgloss.NewStyle().Margin(1, 2)
-
-type listItem struct {
-	title string
-	desc  string
-}
-
-func (i listItem) Title() string       { return i.title }
-func (i listItem) Description() string { return i.desc }
-func (i listItem) FilterValue() string { return i.title }
 
 type chatListModel struct {
 	ctx    context.Context
@@ -31,14 +23,9 @@ type chatListModel struct {
 	err    error
 }
 
-func initialChatListModel(ctx context.Context, sp *app.ServiceProvider, width int, height int) chatListModel {
+func InitialChatListModel(ctx context.Context, sp *app.ServiceProvider, width int, height int) chatListModel {
 	chats, _, err := sp.HandlerService(ctx).GetChatList(ctx, pagination.New(10, 1))
-
-	items := make([]list.Item, len(chats))
-
-	for i, chat := range chats {
-		items[i] = listItem{title: chat.Name, desc: chat.ID}
-	}
+	items := createListItems(chats)
 
 	l := list.New(items, list.NewDefaultDelegate(), 0, 0)
 	l.Title = "Chats"
@@ -74,12 +61,12 @@ func (m chatListModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			selectedChatID := m.list.SelectedItem().(listItem).Description()
 			if selectedChatID != "" {
-				chatModel := initialChatModel(m.ctx, m.sp, selectedChatID)
+				chatModel := InitialConnectChatModel(m.ctx, m.sp, selectedChatID)
 				return chatModel, chatModel.Init()
 			}
 
 		case tea.KeyTab:
-			createChatModel := initialCreateChatModel(m.ctx, m.sp, m.width, m.height)
+			createChatModel := InitialCreateChatModel(m.ctx, m.sp, m.width, m.height)
 			return createChatModel, createChatModel.Init()
 		}
 
@@ -101,10 +88,20 @@ func (m chatListModel) View() string {
 	b.WriteString(docStyle.Render(m.list.View()))
 
 	if len(m.list.Items()) == 0 {
-		b.WriteString("\nYou don`t have any chats. Create new")
+		b.WriteString("\nYou don't have any chats. Create new")
 	}
 
-	b.WriteString(helpStyle.Render("\npress Tab to switch to create new chat"))
+	b.WriteString(helpStyle.Render("\nPress Tab to switch to create new chat"))
 
 	return b.String()
+}
+
+func createListItems(chats []*domain.ChatListInfo) []list.Item {
+	items := make([]list.Item, len(chats))
+
+	for i, chat := range chats {
+		items[i] = listItem{title: chat.Name, desc: chat.ID}
+	}
+
+	return items
 }

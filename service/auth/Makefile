@@ -15,6 +15,9 @@ SWAGGER_DST_DIR := ../../pkg/swagger
 lint:
 	golangci-lint run ./... --config ../../.golangci.pipeline.yaml
 
+run:
+	go run ./cmd/app/main.go
+
 generate-api:
 	mkdir -p $(SWAGGER_DST_DIR)
 	make generate-api-access
