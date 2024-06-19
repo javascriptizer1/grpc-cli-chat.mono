@@ -23,7 +23,7 @@ func newRootCommand(ctx context.Context, sp *app.ServiceProvider) *cobra.Command
 			}
 
 		},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			p := tea.NewProgram(
 				tui.InitialAuthModel(ctx, sp),
 				tea.WithAltScreen(),

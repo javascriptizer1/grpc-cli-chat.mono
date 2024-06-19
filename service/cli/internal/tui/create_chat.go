@@ -79,11 +79,9 @@ func (m createChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursorMode > cursor.CursorHide {
 				m.cursorMode = cursor.CursorBlink
 			}
-			cmds := make([]tea.Cmd, 1)
 
-			cmds[0] = m.name.Cursor.SetMode(m.cursorMode)
+			return m, m.name.Cursor.SetMode(m.cursorMode)
 
-			return m, tea.Batch(cmds...)
 		case tea.KeyShiftTab:
 			chatListModel := InitialChatListModel(m.ctx, m.sp, m.width, m.height)
 			return chatListModel, chatListModel.Init()

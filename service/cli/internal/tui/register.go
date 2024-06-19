@@ -102,7 +102,7 @@ func (m registerModel) View() string {
 	b.WriteString(helpStyle.Render("press Tab to switch to login."))
 
 	content := addMargin(b.String())
-	
+
 	return content
 
 }
