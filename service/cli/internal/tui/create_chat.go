@@ -1,4 +1,4 @@
-package cmd
+package tui
 
 import (
 	"context"
@@ -12,8 +12,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/bubble/internal/app"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/bubble/internal/domain"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/domain"
 )
 
 var (
@@ -34,49 +34,13 @@ type createChatModel struct {
 	err             error
 }
 
-func initialCreateChatModel(ctx context.Context, sp *app.ServiceProvider, width int, height int) createChatModel {
-	name := textinput.New()
-	name.Placeholder = "Chat Name"
-	name.Cursor.Style = cursorStyle
-	name.PromptStyle = focusedStyle
-	name.TextStyle = focusedStyle
-	name.Focus()
+func InitialCreateChatModel(ctx context.Context, sp *app.ServiceProvider, width int, height int) createChatModel {
+	name := initTextInput()
+	columns := initTableColumns()
+	users, err := fetchUsers(ctx, sp)
+	rows := createTableRows(users)
 
-	columns := []table.Column{
-		{Title: "IDX", Width: 10},
-		{Title: "Username", Width: 20},
-		{Title: "Email", Width: 31},
-	}
-
-	users, _, err := sp.HandlerService(ctx).GetUserList(ctx, &domain.UserListOption{
-		Pagination: *pagination.New(10, 1),
-		UserIDs:    []string{},
-	})
-
-	rows := make([]table.Row, len(users))
-
-	for i, user := range users {
-		rows[i] = []string{strconv.Itoa(i + 1), user.Name, user.Email}
-	}
-
-	t := table.New(
-		table.WithColumns(columns),
-		table.WithRows(rows),
-		table.WithFocused(true),
-		table.WithHeight(7),
-	)
-
-	s := table.DefaultStyles()
-	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderBottom(true).
-		Bold(false)
-	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
-		Bold(false)
-	t.SetStyles(s)
+	t := initTable(columns, rows)
 
 	return createChatModel{
 		ctx:             ctx,
@@ -121,7 +85,7 @@ func (m createChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			return m, tea.Batch(cmds...)
 		case tea.KeyShiftTab:
-			chatListModel := initialChatListModel(m.ctx, m.sp, m.width, m.height)
+			chatListModel := InitialChatListModel(m.ctx, m.sp, m.width, m.height)
 			return chatListModel, chatListModel.Init()
 		case tea.KeyTab:
 			m.toggleFocus()
@@ -137,7 +101,7 @@ func (m createChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, nil
 				}
 
-				chatListModel := initialChatListModel(m.ctx, m.sp, m.width, m.height)
+				chatListModel := InitialChatListModel(m.ctx, m.sp, m.width, m.height)
 				return chatListModel, chatListModel.Init()
 			}
 		}
@@ -250,4 +214,64 @@ func (m *createChatModel) getSelectedUsernames() string {
 	}
 
 	return strings.Join(usernames, ", ")
+}
+
+func initTextInput() textinput.Model {
+	name := textinput.New()
+	name.Placeholder = "Chat Name"
+	name.Cursor.Style = cursorStyle
+	name.PromptStyle = focusedStyle
+	name.TextStyle = focusedStyle
+	name.Focus()
+
+	return name
+}
+
+func initTableColumns() []table.Column {
+	return []table.Column{
+		{Title: "IDX", Width: 10},
+		{Title: "Username", Width: 20},
+		{Title: "Email", Width: 31},
+	}
+}
+
+func fetchUsers(ctx context.Context, sp *app.ServiceProvider) ([]*domain.UserInfo, error) {
+	users, _, err := sp.HandlerService(ctx).GetUserList(ctx, &domain.UserListOption{
+		Pagination: *pagination.New(10, 1),
+		UserIDs:    []string{},
+	})
+
+	return users, err
+}
+
+func createTableRows(users []*domain.UserInfo) []table.Row {
+	rows := make([]table.Row, len(users))
+
+	for i, user := range users {
+		rows[i] = []string{strconv.Itoa(i + 1), user.Name, user.Email}
+	}
+
+	return rows
+}
+
+func initTable(columns []table.Column, rows []table.Row) table.Model {
+	t := table.New(
+		table.WithColumns(columns),
+		table.WithRows(rows),
+		table.WithFocused(true),
+		table.WithHeight(7),
+	)
+	s := table.DefaultStyles()
+	s.Header = s.Header.
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color("240")).
+		BorderBottom(true).
+		Bold(false)
+	s.Selected = s.Selected.
+		Foreground(lipgloss.Color("229")).
+		Background(lipgloss.Color("57")).
+		Bold(false)
+	t.SetStyles(s)
+
+	return t
 }

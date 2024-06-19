@@ -6,6 +6,7 @@ PROTOC_GEN_GO_GRPC := ../../bin/protoc-gen-go-grpc
 PROTOC_GEN_GRPC_GATEWAY := ../../bin/protoc-gen-grpc-gateway
 PROTOC_GEN_VALIDATE := ../../bin/protoc-gen-validate
 PROTOC_GEN_OPENAPIV2 := ../../bin/protoc-gen-openapiv2
+GOOSE := ../../bin/goose
 
 PROTO_SRC_DIR := api/proto/v1
 PROTO_VENDOR_DIR := ../../vendor.protogen
@@ -13,6 +14,9 @@ SWAGGER_DST_DIR := ../../pkg/swagger
 
 lint:
 	golangci-lint run ./... --config ../../.golangci.pipeline.yaml
+
+run:
+	go run ./cmd/app/main.go
 
 generate-api:
 	mkdir -p $(SWAGGER_DST_DIR)
@@ -64,7 +68,7 @@ generate-api-user:
 		$(PROTO_SRC_DIR)/user.proto
 
 migrations-generate:
-	goose -dir migrations/postgres create ${name} sql
+	$(GOOSE) -dir migrations/postgres create ${name} sql
 
 migrations-up:
-	GOOSE_DBSTRING=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable goose -dir migrations/postgres postgres up
+	GOOSE_DBSTRING=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable $(GOOSE) -dir migrations/postgres postgres up

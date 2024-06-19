@@ -38,7 +38,7 @@ type UserClient interface {
 }
 
 type Handler interface {
-	ConnectChat(ctx context.Context, chatID string)
+	ConnectChat(ctx context.Context, chatID string) (chatv1.ChatService_ConnectChatClient, error)
 	CreateChat(ctx context.Context, name string, emails []string) (string, error)
 	Login(ctx context.Context, login string, password string) (string, error)
 	Register(ctx context.Context, in dto.RegisterInputDto) (string, error)

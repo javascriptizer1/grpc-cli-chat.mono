@@ -1,8 +1,9 @@
-package cmd
+package tui
 
 import (
 	"context"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"strings"
 
@@ -11,57 +12,35 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	chatv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/chat_v1"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/bubble/internal/app"
+	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
 )
 
 type errMsg error
 
 type chatModel struct {
-	ctx context.Context
-	sp  *app.ServiceProvider
-
-	viewport    viewport.Model
-	textarea    textarea.Model
-	senderStyle lipgloss.Style
-
+	ctx      context.Context
+	sp       *app.ServiceProvider
+	viewport viewport.Model
+	textarea textarea.Model
 	chatID   string
 	messages []*chatv1.Message
 	err      error
 	sub      chan *chatv1.Message
 }
 
-func initialChatModel(ctx context.Context, sp *app.ServiceProvider, chatID string) chatModel {
-	ta := textarea.New()
-	ta.Placeholder = "Send a message..."
-	ta.Focus()
+func InitialConnectChatModel(ctx context.Context, sp *app.ServiceProvider, chatID string) chatModel {
+	ta := initializeTextarea()
+	vp := initializeViewport()
 
-	ta.Prompt = "┃ "
-	ta.CharLimit = 280
-
-	ta.SetWidth(60)
-	ta.SetHeight(6)
-
-	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
-
-	ta.ShowLineNumbers = false
-
-	vp := viewport.New(60, 10)
-	vp.SetContent("Welcome to the chat room!\nType a message and press Enter to send.")
-
-	ta.KeyMap.InsertNewline.SetEnabled(false)
-
-	m := chatModel{
-		ctx:         ctx,
-		sp:          sp,
-		textarea:    ta,
-		viewport:    vp,
-		senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
-		chatID:      chatID,
-		sub:         make(chan *chatv1.Message),
-		err:         nil,
+	return chatModel{
+		ctx:      ctx,
+		sp:       sp,
+		textarea: ta,
+		viewport: vp,
+		chatID:   chatID,
+		sub:      make(chan *chatv1.Message),
+		err:      nil,
 	}
-
-	return m
 }
 
 func (m chatModel) Init() tea.Cmd {
@@ -80,7 +59,6 @@ func (m chatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
-
 		switch msg.Type {
 
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -135,6 +113,7 @@ func (m chatModel) connectChat() tea.Msg {
 
 	if err != nil {
 		m.err = err
+		return nil
 	}
 
 	go m.receiveMessages(stream)
@@ -145,26 +124,20 @@ func (m chatModel) connectChat() tea.Msg {
 func (m *chatModel) receiveMessages(stream chatv1.ChatService_ConnectChatClient) {
 	for {
 		msg, err := stream.Recv()
-
 		if err == io.EOF {
 			break
 		}
-
 		if err != nil {
 			m.err = err
 			return
 		}
-
 		m.sub <- msg
 	}
 }
 
 func (m chatModel) waitForMessage() tea.Cmd {
 	return func() tea.Msg {
-		select {
-		case msg := <-m.sub:
-			return msg
-		}
+		return <-m.sub
 	}
 }
 
@@ -172,12 +145,44 @@ func (m chatModel) formatMessages() []string {
 	formatted := make([]string, len(m.messages))
 
 	for i, msg := range m.messages {
+		color := pickColorForSender(msg.Sender.Name)
+		senderStyle := lipgloss.NewStyle().Foreground(color)
+
 		formatted[i] = fmt.Sprintf("[%s] %s: %s",
 			msg.CreatedAt.AsTime().Format("15:04:05"),
-			m.senderStyle.Render(msg.Sender.Name),
+			senderStyle.Render(msg.Sender.Name),
 			msg.Text,
 		)
 	}
 
 	return formatted
+}
+
+func initializeTextarea() textarea.Model {
+	ta := textarea.New()
+	ta.Placeholder = "Send a message..."
+	ta.Focus()
+	ta.Prompt = "┃ "
+	ta.CharLimit = 280
+	ta.SetWidth(60)
+	ta.SetHeight(6)
+	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
+	ta.ShowLineNumbers = false
+	ta.KeyMap.InsertNewline.SetEnabled(false)
+
+	return ta
+}
+
+func initializeViewport() viewport.Model {
+	vp := viewport.New(60, 10)
+	vp.SetContent("Welcome to the chat room!\nType a message and press Enter to send.")
+
+	return vp
+}
+
+func pickColorForSender(name string) lipgloss.Color {
+	hash := fnv.New32a()
+	hash.Write([]byte(name))
+	colorIndex := hash.Sum32() % 256
+	return lipgloss.Color(fmt.Sprintf("%d", colorIndex))
 }
