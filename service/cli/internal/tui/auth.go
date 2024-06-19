@@ -107,7 +107,9 @@ func (m authModel) View() string {
 	b.WriteString("\n\n")
 	b.WriteString(helpStyle.Render("press Tab to switch to register."))
 
-	return b.String()
+	content := addMargin(b.String())
+
+	return content
 }
 
 func (m authModel) handleCursorChange() (tea.Model, tea.Cmd) {

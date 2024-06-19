@@ -101,11 +101,15 @@ func (m chatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m chatModel) View() string {
-	return fmt.Sprintf(
+	view := fmt.Sprintf(
 		"%s\n\n%s",
 		m.viewport.View(),
 		m.textarea.View(),
 	) + "\n\n"
+
+	content := addMargin(view)
+
+	return content
 }
 
 func (m chatModel) connectChat() tea.Msg {

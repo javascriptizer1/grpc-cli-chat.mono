@@ -12,7 +12,7 @@ import (
 	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/domain"
 )
 
-var docStyle = lipgloss.NewStyle().Margin(1, 2)
+var docStyle = lipgloss.NewStyle().Margin(3, 2)
 
 type chatListModel struct {
 	ctx    context.Context

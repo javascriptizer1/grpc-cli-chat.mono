@@ -158,7 +158,9 @@ func (m createChatModel) View() string {
 
 	view.WriteString("\n\nPress Tab to switch focus, Shift+Tab to return chat list or Esc/Ctrl+C to exit.")
 
-	return view.String()
+	content := addMargin(view.String())
+
+	return content
 }
 
 func (m *createChatModel) toggleFocus() {

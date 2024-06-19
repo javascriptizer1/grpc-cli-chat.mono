@@ -10,3 +10,9 @@ var (
 	helpStyle           = blurredStyle
 	cursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
 )
+
+func addMargin(view string) string {
+	return lipgloss.NewStyle().
+		Margin(2, 3).
+		Render(view)
+}

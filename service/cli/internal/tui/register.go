@@ -101,7 +101,10 @@ func (m registerModel) View() string {
 	b.WriteString("\n\n")
 	b.WriteString(helpStyle.Render("press Tab to switch to login."))
 
-	return b.String()
+	content := addMargin(b.String())
+	
+	return content
+
 }
 
 func (m registerModel) handleCursorChange() (tea.Model, tea.Cmd) {
