@@ -60,7 +60,20 @@ make install-deps
 
 ## Command Usage 🚀
 
-### Auth Service Commands
+### CLI Commands Overview (branch feat/cli - deprecated)
+
+Our CLI client now supports various commands to interact with the backend services seamlessly using Cobra and Bubbletea. Here are a few:
+
+- **Auth Service Commands**
+  - `gchat register`: Register a new user.
+  - `gchat login`: Login with existing credentials.
+  - `gchat list-user`: List all users.
+- **Chat Service Commands**
+  - `gchat create-chat`: Create a chat with the specified users.
+  - `gchat list-chat`: List all user chats.
+  - `gchat connect-chat`: Connect to a specific chat by chat ID.
+
+Example commands:
 
 - **Register a New User**
 
@@ -80,8 +93,6 @@ go run main.go login --login "john@example.com" --password "password"
 go run main.go list-user
 ```
 
-### Chat Service Commands
-
 - **Create a Chat**
 
 ```bash
@@ -100,15 +111,41 @@ go run main.go list-chat
 go run main.go connect-chat --chat-id "chat123"
 ```
 
-### CLI Commands Overview
+## New Interaction Through Bubbletea
 
-Our CLI client supports various commands to interact with the backend services seamlessly. Here are a few:
+The interaction with our application is now fully integrated with Bubbletea, providing a rich, interactive terminal user interface (TUI). This change enhances user experience and allows for more dynamic and responsive interactions.
 
-- `register`: Register a new user.
-- `login`: Login with existing credentials.
-- `create-chat`: Create a chat with the specified users.
-- `list-chat`: List of all user chats.
-- `connect-chat`: Connect to a specific chat by chat ID.
+### Screenshots
+
+- **Login**
+
+  ![Login Screen](/assets/screenshots/login.png)
+
+  The login allows users to enter their credentials and access the chat service.
+
+- **Registration**
+
+  ![Registration Screen](/assets/screenshots/registration.png)
+
+  The registration enables users to create a new account by providing their name, email, and password.
+
+- **Create Chat**
+
+  ![Create Chat Screen](/assets/screenshots/create_chat.gif)
+
+  The create chat allows users to initiate a new chat room by selecting participants and starting conversations.
+
+- **Chat List Screen**
+
+  ![Chat Room](/assets/screenshots/chat_list.png)
+
+  The chat list shows a list of chat rooms the user is part of and allows seamless navigation between them.
+
+- **Chat Interaction**
+
+  ![Chat Interaction Screen](/assets/screenshots/chat.gif)
+
+  The chat interaction provides a real-time chat interface where users can send and receive messages.
 
 ## Architecture Overview 🏗️
 
@@ -117,7 +154,7 @@ Our project is organized as a monorepository containing three main applications:
 ### Auth Service
 
 - **Database**: PostgreSQL
-- **Functionality**: manages user registration, login, and authentication using access and refresh tokens.
+- **Functionality**: manages user registration, login, and authentication using access and refresh tokens
 
 ### Chat Service
 
@@ -126,8 +163,8 @@ Our project is organized as a monorepository containing three main applications:
 
 ### CLI Client
 
-- **Framework**: Cobra
-- **Functionality**: a command-line interface that allows users to interact with the Auth and Chat services.
+- **Framework**: Cobra and Bubbletea
+- **Functionality**: a command-line interface that allows users to interact with the Auth and Chat services using a rich TUI
 
 #### Key Features
 
@@ -212,19 +249,6 @@ Ensure that the following environment variables are set in your GitHub repositor
 - `VPS_SSH_KEY`: Your VPS SSH private key.
 - `VPS_USER`: Your VPS user.
 - `VPS_HOST`: Your VPS host address.
-
-## Future Plans 🌅
-
-My plan to rewrite the CLI application from Cobra to Bubble Tea to build a full-fledged console UI. This will provide a more interactive and user-friendly experience for users interacting with my services via the command line.
-
-### Why Bubble Tea?
-
-- **Rich Interactive UI**: Bubble Tea allows us to build rich, interactive UIs directly in the terminal, enhancing user experience.
-- **Customization**: Offers a high degree of customization, enabling us to tailor the interface to my specific needs.
-- **Active Community**: Supported by an active community and regularly updated. [Bubble Tea GitHub Repository](https://github.com/charmbracelet/bubbletea)
-- **Ease of Use**: Simplifies the development of complex terminal applications, making the process more intuitive and efficient.
-
-With these enhancements, I aim to provide a powerful and engaging CLI tool that leverages the capabilities of Bubble Tea to its fullest potential.
 
 ## Acknowledgments 🙌
 
