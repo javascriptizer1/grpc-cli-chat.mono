@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/logger"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )

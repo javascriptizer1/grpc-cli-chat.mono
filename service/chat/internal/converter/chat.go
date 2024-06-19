@@ -1,8 +1,8 @@
 package converter
 
 import (
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/domain"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/repository/dao"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/chat/internal/domain"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/chat/internal/repository/dao"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

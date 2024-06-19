@@ -2,8 +2,8 @@ package converter
 
 import (
 	"github.com/google/uuid"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/domain"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/repository/dao"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/domain"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/repository/dao"
 )
 
 func ToDaoUser(domainUser *domain.User) *dao.User {

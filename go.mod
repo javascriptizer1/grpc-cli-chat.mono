@@ -1,4 +1,4 @@
-module github.com/javascriptizer1/grpc-cli-chat.backend
+module github.com/javascriptizer1/grpc-cli-chat.mono
 
 go 1.22.4
 

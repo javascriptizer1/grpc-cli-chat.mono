@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/app"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/logger"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/app"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/logger"
 	"go.uber.org/zap"
 )
 

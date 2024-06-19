@@ -5,8 +5,8 @@ import (
 	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/tui"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/internal/app"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/internal/tui"
 	"github.com/spf13/cobra"
 )
 

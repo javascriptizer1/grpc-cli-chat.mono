@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/ctxkey"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/jwt"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/helper/ctxkey"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/helper/jwt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"

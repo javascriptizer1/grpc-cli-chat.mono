@@ -7,9 +7,9 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/domain"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/type/pagination"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/internal/app"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/internal/domain"
 )
 
 var docStyle = lipgloss.NewStyle().Margin(3, 2)

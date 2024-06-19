@@ -3,13 +3,13 @@ package app
 import (
 	"context"
 
-	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/client/postgres"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/closer"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/config"
-	delivery "github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/delivery/grpc"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/logger"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/repository"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/service"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/client/postgres"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/helper/closer"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/config"
+	delivery "github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/delivery/grpc"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/logger"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/repository"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/service"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 )

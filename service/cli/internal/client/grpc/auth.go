@@ -3,8 +3,8 @@ package client
 import (
 	"context"
 
-	authv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/auth_v1"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/client/grpc/dto"
+	authv1 "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/grpc/auth_v1"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/internal/client/grpc/dto"
 )
 
 type AuthClient struct {

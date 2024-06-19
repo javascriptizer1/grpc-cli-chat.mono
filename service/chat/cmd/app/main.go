@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/app"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/chat/internal/app"
 )
 
 func main() {

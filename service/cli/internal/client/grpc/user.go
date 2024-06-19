@@ -3,8 +3,8 @@ package client
 import (
 	"context"
 
-	userv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/user_v1"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/domain"
+	userv1 "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/grpc/user_v1"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/internal/domain"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 

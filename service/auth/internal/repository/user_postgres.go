@@ -7,9 +7,9 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/converter"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/domain"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/repository/dao"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/converter"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/domain"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/repository/dao"
 	"github.com/jmoiron/sqlx"
 )
 

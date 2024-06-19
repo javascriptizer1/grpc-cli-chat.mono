@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/jwt"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/domain"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/service/dto"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/helper/jwt"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/domain"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/service/dto"
 )
 
 type AuthConfig struct {

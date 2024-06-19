@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
+import "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/type/pagination"
 
 type UserListOption struct {
 	pagination.Pagination

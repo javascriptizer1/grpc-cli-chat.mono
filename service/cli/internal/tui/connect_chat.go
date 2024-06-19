@@ -11,8 +11,8 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	chatv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/chat_v1"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
+	chatv1 "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/grpc/chat_v1"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/internal/app"
 )
 
 type errMsg error

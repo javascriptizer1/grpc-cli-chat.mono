@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/domain"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/type/pagination"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/chat/internal/domain"
 )
 
 type ChatRepository interface {

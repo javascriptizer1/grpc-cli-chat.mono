@@ -30,8 +30,8 @@ Ensure you have the following installed on your system:
 1. **Clone the Repository**
 
 ```bash
-git clone https://github.com/javascriptizer1/grpc-cli-chat.backend.git
-cd grpc-cli-chat.backend
+git clone https://github.com/javascriptizer1/grpc-cli-chat.mono.git
+cd grpc-cli-chat.mono
 ```
 
 2. **Environment Configuration**

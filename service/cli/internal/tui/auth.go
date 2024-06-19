@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/internal/app"
 )
 
 var (

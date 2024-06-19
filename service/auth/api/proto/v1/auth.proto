@@ -9,7 +9,7 @@ import "buf/validate/validate.proto";
 
 package authv1;
 
-option go_package = "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/auth_v1;authv1";
+option go_package = "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/grpc/auth_v1;authv1";
 
 
 service AuthService {

@@ -3,9 +3,9 @@ package client
 import (
 	"context"
 
-	chatv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/chat_v1"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/domain"
+	chatv1 "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/grpc/chat_v1"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/type/pagination"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/internal/domain"
 )
 
 type ChatClient struct {

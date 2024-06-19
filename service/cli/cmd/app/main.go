@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/cmd"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/cmd"
 )
 
 func main() {

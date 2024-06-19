@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/golang-jwt/jwt/v5"
-	accessv1 "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/access_v1"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/domain"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/auth/internal/interceptor"
+	accessv1 "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/grpc/access_v1"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/domain"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/auth/internal/interceptor"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"

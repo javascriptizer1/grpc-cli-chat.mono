@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/converter"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/domain"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/chat/internal/repository/dao"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/chat/internal/converter"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/chat/internal/domain"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/chat/internal/repository/dao"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

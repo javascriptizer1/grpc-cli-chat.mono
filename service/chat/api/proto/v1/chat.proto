@@ -5,7 +5,7 @@ import "google/protobuf/timestamp.proto";
 
 package chatv1;
 
-option go_package = "github.com/javascriptizer1/grpc-cli-chat.backend/pkg/grpc/chat_v1;chatv1";
+option go_package = "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/grpc/chat_v1;chatv1";
 
 
 service ChatService {

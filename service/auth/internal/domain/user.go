@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/helper/bcrypt"
-	"github.com/javascriptizer1/grpc-cli-chat.backend/pkg/type/pagination"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/helper/bcrypt"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/type/pagination"
 )
 
 type UserListFilter struct {

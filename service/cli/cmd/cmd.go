@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 
-	"github.com/javascriptizer1/grpc-cli-chat.backend/service/cli/internal/app"
+	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/internal/app"
 )
 
 func Execute() error {
