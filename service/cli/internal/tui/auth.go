@@ -7,8 +7,10 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/cursor"
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/internal/app"
 )
 
@@ -20,30 +22,34 @@ var (
 type authModel struct {
 	ctx        context.Context
 	sp         *app.ServiceProvider
+	spinner    spinner.Model
 	focusIndex int
 	inputs     []textinput.Model
 	cursorMode cursor.Mode
 	width      int
 	height     int
+	loading    bool
 	err        error
 }
 
 func InitialAuthModel(ctx context.Context, sp *app.ServiceProvider) authModel {
 	m := authModel{
-		ctx:    ctx,
-		sp:     sp,
-		inputs: make([]textinput.Model, 2),
-		err:    nil,
+		ctx:     ctx,
+		sp:      sp,
+		spinner: initSpinner(),
+		inputs:  make([]textinput.Model, 2),
+		loading: false,
+		err:     nil,
 	}
 
-	m.inputs[0] = newTextInput("Username", true)
+	m.inputs[0] = newTextInput("Email", true)
 	m.inputs[1] = newPasswordInput("Password")
 
 	return m
 }
 
 func (m authModel) Init() tea.Cmd {
-	return textinput.Blink
+	return tea.Batch(textinput.Blink, m.spinner.Tick)
 }
 
 func (m authModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -72,6 +78,22 @@ func (m authModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+
+	case spinner.TickMsg:
+		if m.loading {
+			var cmd tea.Cmd
+			m.spinner, cmd = m.spinner.Update(msg)
+			return m, cmd
+		}
+
+	case errMsg:
+		m.err = msg
+		m.loading = false
+		return m, nil
+
+	case teaModelMsg:
+		m.loading = false
+		return msg.model, msg.cmd
 	}
 
 	cmd := m.updateInputs(msg)
@@ -97,6 +119,8 @@ func (m authModel) View() string {
 
 	if m.err != nil {
 		b.WriteString(fmt.Sprintf("Error: %v\n", m.err))
+	} else if m.loading {
+		b.WriteString(fmt.Sprintf("%s Loading...\n\n", m.spinner.View()))
 	} else {
 		b.WriteRune('\n')
 	}
@@ -142,15 +166,24 @@ func (m authModel) handleLogin() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	_, err := m.sp.HandlerService(m.ctx).Login(m.ctx, login, password)
+	m.err = nil
+	m.loading = true
 
-	if err != nil {
-		m.err = err
-		return m, nil
+	return m, tea.Batch(m.spinner.Tick, m.doLogin(login, password))
+}
+
+func (m authModel) doLogin(login, password string) tea.Cmd {
+	return func() tea.Msg {
+		_, err := m.sp.HandlerService(m.ctx).Login(m.ctx, login, password)
+
+		if err != nil {
+			return errMsg(err)
+		}
+
+		chatListModel := InitialChatListModel(m.ctx, m.sp, m.width, m.height)
+
+		return teaModelMsg{model: chatListModel, cmd: chatListModel.Init()}
 	}
-
-	chatListModel := InitialChatListModel(m.ctx, m.sp, m.width, m.height)
-	return chatListModel, chatListModel.Init()
 }
 
 func (m authModel) handleFocusChange(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
@@ -218,4 +251,12 @@ func newPasswordInput(placeholder string) textinput.Model {
 	t.EchoMode = textinput.EchoPassword
 	t.EchoCharacter = '•'
 	return t
+}
+
+func initSpinner() spinner.Model {
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+
+	return s
 }

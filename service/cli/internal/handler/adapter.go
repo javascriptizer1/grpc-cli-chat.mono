@@ -24,6 +24,7 @@ type AuthClient interface {
 }
 
 type UserClient interface {
+	GetUserInfo(ctx context.Context) (*domain.UserInfo, error)
 	GetUserList(ctx context.Context, options *domain.UserListOption) ([]*domain.UserInfo, uint32, error)
 }
 

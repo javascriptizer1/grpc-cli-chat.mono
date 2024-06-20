@@ -148,7 +148,7 @@ func RegisterUserServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux
 // RegisterUserServiceHandlerFromEndpoint is same as RegisterUserServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
 func RegisterUserServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
-	conn, err := grpc.NewClient(endpoint, opts...)
+	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
 	}

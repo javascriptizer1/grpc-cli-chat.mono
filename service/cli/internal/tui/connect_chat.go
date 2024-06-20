@@ -15,8 +15,6 @@ import (
 	"github.com/javascriptizer1/grpc-cli-chat.mono/service/cli/internal/app"
 )
 
-type errMsg error
-
 type chatModel struct {
 	ctx      context.Context
 	sp       *app.ServiceProvider

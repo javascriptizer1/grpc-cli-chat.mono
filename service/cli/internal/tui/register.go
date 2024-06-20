@@ -144,6 +144,7 @@ func (m registerModel) handleRegister() (tea.Model, tea.Cmd) {
 		Email:           email,
 		Password:        password,
 		PasswordConfirm: passwordConfirm,
+		Role:            1, // user
 	})
 
 	if err != nil {

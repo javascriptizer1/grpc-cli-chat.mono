@@ -46,4 +46,5 @@ type Handler interface {
 	GetChatList(ctx context.Context, p *pagination.Pagination) ([]*domain.ChatListInfo, uint32, error)
 	GetChat(ctx context.Context, chatID string) (*domain.ChatInfo, error)
 	GetUserList(ctx context.Context, options *domain.UserListOption) ([]*domain.UserInfo, uint32, error)
+	IsAccessValid(ctx context.Context) bool
 }

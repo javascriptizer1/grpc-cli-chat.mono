@@ -24,8 +24,16 @@ func newRootCommand(ctx context.Context, sp *app.ServiceProvider) *cobra.Command
 
 		},
 		RunE: func(_ *cobra.Command, _ []string) error {
+			var m tea.Model
+
+			if sp.HandlerService(ctx).IsAccessValid(ctx) {
+				m = tui.InitialChatListModel(ctx, sp, 0, 0)
+			} else {
+				m = tui.InitialAuthModel(ctx, sp)
+			}
+
 			p := tea.NewProgram(
-				tui.InitialAuthModel(ctx, sp),
+				m,
 				tea.WithAltScreen(),
 				tea.WithContext(ctx),
 			)

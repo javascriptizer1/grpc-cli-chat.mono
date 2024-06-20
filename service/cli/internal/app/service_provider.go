@@ -63,7 +63,7 @@ func (s *ServiceProvider) GRPCAuthClientConn(ctx context.Context) grpc.ClientCon
 
 		authInterceptor := interceptor.NewAuthInterceptor(s.TokenManager(ctx))
 
-		conn, err := grpc.NewClient(
+		conn, err := grpc.Dial(
 			s.Config().GRPCAuth.HostPort(),
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithChainUnaryInterceptor(authInterceptor.Unary()),
@@ -87,7 +87,7 @@ func (s *ServiceProvider) GRPCChatClientConn(ctx context.Context) grpc.ClientCon
 
 		authInterceptor := interceptor.NewAuthInterceptor(s.TokenManager(ctx))
 
-		conn, err := grpc.NewClient(
+		conn, err := grpc.Dial(
 			s.Config().GRPCChat.HostPort(),
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithChainUnaryInterceptor(authInterceptor.Unary()),

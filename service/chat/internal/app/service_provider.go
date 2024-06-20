@@ -5,7 +5,6 @@ import (
 
 	mongoClient "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/client/mongo"
 	accessv1 "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/grpc/access_v1"
-	authv1 "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/grpc/auth_v1"
 	userv1 "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/grpc/user_v1"
 	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/helper/closer"
 	grpcClient "github.com/javascriptizer1/grpc-cli-chat.mono/service/chat/internal/client/grpc"
@@ -32,7 +31,6 @@ type serviceProvider struct {
 
 	chatService ChatService
 
-	authClient   AuthClient
 	accessClient AccessClient
 	userClient   UserClient
 
@@ -56,7 +54,7 @@ func (s *serviceProvider) Config() *config.Config {
 func (s *serviceProvider) GRPCClientConn() grpc.ClientConnInterface {
 
 	if s.grpcClientConn == nil {
-		conn, err := grpc.NewClient(
+		conn, err := grpc.Dial(
 			s.Config().GRPCAuth.HostPort(),
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
@@ -124,15 +122,6 @@ func (s *serviceProvider) ChatService(ctx context.Context) ChatService {
 	}
 
 	return s.chatService
-}
-
-func (s *serviceProvider) AuthClient(_ context.Context) AuthClient {
-
-	if s.authClient == nil {
-		s.authClient = grpcClient.NewAuthClient(authv1.NewAuthServiceClient(s.GRPCClientConn()))
-	}
-
-	return s.authClient
 }
 
 func (s *serviceProvider) AccessClient(_ context.Context) AccessClient {

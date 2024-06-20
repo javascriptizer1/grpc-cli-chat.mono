@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/type/pagination"
-	"github.com/javascriptizer1/grpc-cli-chat.mono/service/chat/internal/client/grpc/dto"
 	"github.com/javascriptizer1/grpc-cli-chat.mono/service/chat/internal/domain"
 )
 
@@ -26,13 +25,6 @@ type ChatService interface {
 	List(ctx context.Context, userID string, p pagination.Pagination) ([]*domain.Chat, uint32, error)
 	ListMessage(ctx context.Context, chatID string, userID string) ([]*domain.Message, int, error)
 	OneByID(ctx context.Context, id string) (*domain.Chat, error)
-}
-
-type AuthClient interface {
-	GetAccessToken(ctx context.Context, refreshToken string) (accessToken string, err error)
-	GetRefreshToken(ctx context.Context, oldRefreshToken string) (refreshToken string, err error)
-	Login(ctx context.Context, login string, password string) (refreshToken string, err error)
-	Register(ctx context.Context, in dto.RegisterInputDto) (id string, err error)
 }
 
 type AccessClient interface {
