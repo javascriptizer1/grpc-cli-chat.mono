@@ -52,3 +52,4 @@ issues:
   - 'exported: exported method .* should have comment or be unexported'
   - 'exported: exported type .* should have comment or be unexported'
   - 'exported: exported const .* should have comment or be unexported'
+  - 'SA1019: grpc.Dial is deprecated: use NewClient instead.  Will be supported throughout 1.x.'
