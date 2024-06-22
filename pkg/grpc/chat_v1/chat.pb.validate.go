@@ -629,8 +629,6 @@ func (m *ConnectChatRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for UserId
-
 	// no validation rules for ChatId
 
 	if len(errors) > 0 {

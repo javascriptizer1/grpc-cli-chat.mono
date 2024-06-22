@@ -43,8 +43,7 @@ message CreateChatResponse {
 }
 
 message ConnectChatRequest {
-  string user_id = 1;
-  string chat_id = 2;
+  string chat_id = 1;
 }
 
 

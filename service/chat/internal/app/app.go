@@ -6,7 +6,6 @@ import (
 	"net"
 	"sync"
 
-	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	chatv1 "github.com/javascriptizer1/grpc-cli-chat.mono/pkg/grpc/chat_v1"
 	"github.com/javascriptizer1/grpc-cli-chat.mono/pkg/helper/closer"
 	"github.com/javascriptizer1/grpc-cli-chat.mono/service/chat/internal/interceptor"
@@ -81,12 +80,10 @@ func (a *App) initLogger(_ context.Context) error {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
+	authInterceptor := interceptor.NewAuthInterceptor(a.serviceProvider.AccessClient(ctx))
 	a.grpcServer = grpc.NewServer(
-		grpc.UnaryInterceptor(
-			grpcMiddleware.ChainUnaryServer(
-				interceptor.NewAuthInterceptor(a.serviceProvider.AccessClient(ctx)).Unary(),
-			),
-		),
+		grpc.StreamInterceptor(authInterceptor.Stream()),
+		grpc.UnaryInterceptor(authInterceptor.Unary()),
 	)
 
 	reflection.Register(a.grpcServer)

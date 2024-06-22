@@ -3,7 +3,6 @@ package tui
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/cursor"
@@ -229,7 +228,7 @@ func initTextInput() textinput.Model {
 
 func initTableColumns() []table.Column {
 	return []table.Column{
-		{Title: "IDX", Width: 10},
+		{Title: "ID", Width: 36},
 		{Title: "Username", Width: 20},
 		{Title: "Email", Width: 31},
 	}
@@ -248,7 +247,7 @@ func createTableRows(users []*domain.UserInfo) []table.Row {
 	rows := make([]table.Row, len(users))
 
 	for i, user := range users {
-		rows[i] = []string{strconv.Itoa(i + 1), user.Name, user.Email}
+		rows[i] = []string{user.ID, user.Name, user.Email}
 	}
 
 	return rows

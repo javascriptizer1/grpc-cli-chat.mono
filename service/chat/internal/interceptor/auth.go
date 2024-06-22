@@ -9,6 +9,15 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+type serverStreamWithContext struct {
+	grpc.ServerStream
+	ctx context.Context
+}
+
+func (ss *serverStreamWithContext) Context() context.Context {
+	return ss.ctx
+}
+
 type AccessClient interface {
 	Check(ctx context.Context, endpoint string) (bool, error)
 }
@@ -42,5 +51,30 @@ func (i *authInterceptor) Unary() grpc.UnaryServerInterceptor {
 		}
 
 		return handler(ctx, req)
+	}
+}
+
+func (i *authInterceptor) Stream() grpc.StreamServerInterceptor {
+	return func(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		ctx := ss.Context()
+		md, ok := metadata.FromIncomingContext(ctx)
+
+		if ok {
+			ctx = metadata.NewOutgoingContext(ctx, md)
+		}
+
+		ok, err := i.accessClient.Check(ctx, info.FullMethod)
+
+		if err != nil {
+			return err
+		}
+
+		if !ok {
+			return status.Errorf(codes.PermissionDenied, "access denied")
+		}
+
+		wrappedStream := &serverStreamWithContext{ss, ctx}
+
+		return handler(srv, wrappedStream)
 	}
 }

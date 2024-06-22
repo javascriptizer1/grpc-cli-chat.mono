@@ -11,6 +11,7 @@
 *.dylib
 /bin/
 bin
+bin_lnx_64
 
 # Test binary, built with `go test -c`
 *.test
@@ -30,3 +31,4 @@ go.work.sum
 .env
 
 gchat
+.gchat

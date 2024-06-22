@@ -18,7 +18,7 @@ type Config struct {
 }
 
 func (c *Config) ClientConfigPath() string {
-	return filepath.Join("gchat", ".config.json")
+	return filepath.Join(".gchat", ".config.json")
 }
 
 type GRPCAuthConfig struct {

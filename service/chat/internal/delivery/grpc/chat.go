@@ -55,6 +55,12 @@ func (impl *ChatImplementation) CreateChat(ctx context.Context, request *chatv1.
 }
 
 func (impl *ChatImplementation) ConnectChat(request *chatv1.ConnectChatRequest, stream chatv1.ChatService_ConnectChatServer) error {
+	u, err := impl.userClient.GetUserInfo(stream.Context())
+
+	if err != nil {
+		return err
+	}
+
 	ch := make(chan *chatv1.Message, maxMessageInChannel)
 
 	impl.mu.Lock()
@@ -63,15 +69,15 @@ func (impl *ChatImplementation) ConnectChat(request *chatv1.ConnectChatRequest, 
 		impl.clients[request.GetChatId()] = make(map[string]chan *chatv1.Message)
 	}
 
-	impl.clients[request.GetChatId()][request.GetUserId()] = ch
+	impl.clients[request.GetChatId()][u.ID] = ch
 
 	impl.mu.Unlock()
 
-	logger.Info(fmt.Sprintf("User %s connected to chat %s", request.GetUserId(), request.GetChatId()))
+	logger.Info(fmt.Sprintf("User %s connected to chat %s", u.ID, request.GetChatId()))
 
 	defer func() {
 		impl.mu.Lock()
-		delete(impl.clients[request.GetChatId()], request.GetUserId())
+		delete(impl.clients[request.GetChatId()], u.ID)
 
 		if len(impl.clients[request.GetChatId()]) == 0 {
 			delete(impl.clients, request.GetChatId())
@@ -79,7 +85,7 @@ func (impl *ChatImplementation) ConnectChat(request *chatv1.ConnectChatRequest, 
 
 		impl.mu.Unlock()
 
-		logger.Info(fmt.Sprintf("User %s disconnected from chat %s", request.GetUserId(), request.GetChatId()))
+		logger.Info(fmt.Sprintf("User %s disconnected from chat %s", u.ID, request.GetChatId()))
 		close(ch)
 	}()
 
